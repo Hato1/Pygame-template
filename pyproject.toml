@@ -1,0 +1,61 @@
+[project]
+name = "spatial"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Jacob Rogers",email = "jacob.p.r@hotmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pygame-ce (>=2.5.3,<3.0.0)",
+    "ruff (>=0.11.6,<0.12.0)"
+]
+
+[tool.poetry]
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.15.0"
+pytest = "^8.3.5"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = [
+  "ALL"
+  # "F", # pyflakes
+  # "E", # pycodestyle
+  # "W", # pycodestyle warnings
+  # "I", # isort
+  # "N", # pep8-naming
+  # "B", # flake8-bugbear
+]
+ignore = [
+  # pycodestyle (for black)
+  "E203",
+  # pycodestyle (overlaps with bugbear)
+  "E722",
+  # Allow ### comments
+  "E266",
+  # Do not require blank line before class docstring
+  "D203",
+  # Docstring starts on first line.
+  "D213",
+  # Allow Assert
+  "S101",
+  # Don't require __init__.py
+  "INP001",
+]
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 120
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = ["classmethod", "validator"]
