@@ -2,7 +2,12 @@
 
 import pygame
 
+from pygame_me.logging import get_logger
+from spatial.world import test
+
 pygame.init()
+
+logger = get_logger()
 
 
 WHITE = (255, 255, 255)
@@ -11,6 +16,12 @@ RED = (255, 0, 0)
 
 def main() -> None:
     """Run the game."""
+    logger.debug("Debug", x=5)
+    logger.info("Info")
+    logger.warning("Warning")
+    logger.error("Error")
+    logger.critical("Critical", bad="bad")
+    test()
     resolution = (640, 640)
     screen = pygame.display.set_mode(resolution)
     clock = pygame.time.Clock()
