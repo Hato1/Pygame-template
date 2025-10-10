@@ -1,6 +1,4 @@
-"""
-This module contains the fundamental StateManager class and a prototype class
-for States.  Also contained here are resource loading functions.
+"""This module contains the StateManager class and a abstract State class.
 
 TODO: Fix state specifier.
 TODO: Fix key manager to capture both keypress instances and key holds.
