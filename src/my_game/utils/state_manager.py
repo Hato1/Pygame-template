@@ -7,6 +7,7 @@ TODO: Fix key manager to capture both keypress instances and key holds.
       Use pygame.key.get_pressed() for key holds and key.get_just_pressed
       and key.get_just_released alongside event.pump for instantaneous.
       Actually don't because this will miss non keyboard events.
+TODO: Store state dict in states/__init__.py and import here.
 """
 
 from __future__ import annotations
@@ -18,9 +19,24 @@ import pygame as pg
 
 
 class StateManager:
-    """Control class for entire project. Contains the game loop, and contains
-    the event_loop which passes events to States as needed. Logic for flipping
-    states is also found here."""
+    """Responsible for managing the different states/scenes of a Pygame application.
+
+    Methods:
+        event_loop():
+            Processes all Pygame events and passes them to the current state. Handles global toggling of FPS display.
+
+        toggle_show_fps(key):
+            Toggles the display of FPS in the window caption when F5 is pressed.
+
+        update(dt):
+            Updates the current state, checks for state changes, and manages quitting.
+
+        change_state():
+            Cleans up the current state and transitions to the next state, passing persistent variables.
+
+        main():
+            Runs the main loop, handling events, updating states, rendering, and updating the window caption.
+    """
 
     def __init__(self, screen: pg.Surface, states: dict[type[State], State], starting_state: type[State], caption: str):
         """Initialize the StateManager with a dictionary of states and the starting state."""
@@ -32,9 +48,9 @@ class StateManager:
 
         self.quit: bool = False  # Set to True to exit program.
         self.clock: pg.Clock = pg.time.Clock()
+        self.current_time: float = 0.0  # Current time in seconds since program launched.
         self.fps: float = 60.0  # Used to limit the framerate.
         self.show_fps: bool = True  # Display the framerate in the caption.
-        self.current_time: float = 0.0  # Current time in seconds since program launched.
         self.keys = pg.key.get_pressed()  # Current state of all keyboard buttons.
 
     def event_loop(self):
@@ -97,20 +113,42 @@ class StateManager:
 
 
 class State(ABC):
-    """This is a prototype class for States.  All states should inherit from it.
-    No direct instances of this class should be created. get_event and update
-    must be overloaded in the childclass.  startup and cleanup need to be
-    overloaded when there is data that must persist between States."""
+    """Abstract base class for program states.
+
+    Attributes:
+        start_time (float): Time in seconds since the State started.
+        current_time (float): Current time in seconds since the program launched.
+        done (bool): Set to True to leave this state and go to the next one.
+        quit (bool): Set to True to exit the entire program.
+        next (type[State] | None): Next state to go to when self.done is True.
+        previous (type[State] | None): The state that was active before this one.
+        persist (dict[str, Any]): Dictionary of variables that should persist to the next state.
+
+    Methods:
+        get_event(event: pg.Event):
+            Abstract method to process events from the main event loop.
+            Must be implemented by subclasses.
+
+        startup(current_time, persistant, previous: type[State]):
+            Initializes the state with the current time, persistent variables, and previous state.
+
+        cleanup():
+            Prepares persistent variables for the next state and resets the done flag.
+
+        update(surface, keys, current_time, dt):
+            Abstract method to update the state logic.
+            Must be implemented by subclasses.
+    """
 
     def __init__(self):
         # Time in seconds since the State started.
         self.start_time: float = 0.0
         # Current time in seconds since the program launched.
         self.current_time: float = 0.0
-        # Set to True to leave this state and go to the next one.
-        self.done: bool = False
-        # Set to True to exit the entire program.
+        # Exit the entire program.
         self.quit: bool = False
+        # Leave this state and go to the next one.
+        self.done: bool = False
         # Next state to go to when self.done is True.
         self.next: type[State] | None = None
         # The state that was active before this one.
@@ -120,13 +158,10 @@ class State(ABC):
 
     @abstractmethod
     def get_event(self, event: pg.Event):
-        """Processes events that were passed from the main event loop.
-
-        Must be overloaded in children.
-        """
+        """Processes events that were passed from the main event loop."""
         pass
 
-    def startup(self, current_time, persistant, previous: type[State]):
+    def startup(self, current_time: float, persistant: dict[str, Any], previous: type[State]):
         """Add variables passed in persistant to the proper attributes and
         set the start time of the State to the current time."""
         self.persist = persistant
@@ -140,17 +175,12 @@ class State(ABC):
         return self.persist
 
     @abstractmethod
-    def update(self, surface, keys, current_time, dt):
-        """Update function for state. Must be overloaded in children."""
-        pass
+    def update(self, surface: pg.Surface, keys, current_time: float, dt: float):
+        """Update function for state. Must be overloaded in children.
 
-    def render_font(
-        self, font: pg.Font, msg, color: pg.typing.ColorLike, center: pg.Vector2
-    ) -> tuple[pg.Surface, pg.Rect]:
-        """Returns the rendered font surface and its rect centered on center.
-
-        TODO: Move to seperate utility module?
+        surface: The surface to draw to.
+        keys: The current state of all keyboard buttons.
+        current_time: Current time in seconds since program launched.
+        dt: Time in seconds since last frame.
         """
-        msg = font.render(msg, True, color)
-        rect = msg.get_rect(center=center)
-        return msg, rect
+        pass

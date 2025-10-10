@@ -1,4 +1,4 @@
-"""Run the game."""
+"""Run the program."""
 
 import pygame as pg
 
@@ -11,7 +11,7 @@ ORIGINAL_CAPTION = "My Game"
 
 
 def main():
-    """Run the game."""
+    """Run the program."""
 
     # Initialization
     pg.init()
@@ -22,7 +22,7 @@ def main():
     state_dict: dict[type[State], State] = {MainMenu: MainMenu(), Game: Game()}
     state_manager = StateManager(screen, state_dict, MainMenu, ORIGINAL_CAPTION)
 
-    # Run game loop.
+    # Run main loop.
     state_manager.main()
 
     pg.quit()
