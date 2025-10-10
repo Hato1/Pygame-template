@@ -1,2 +1,1 @@
 TODO: Create logging module.
-TODO: Write up game idea.

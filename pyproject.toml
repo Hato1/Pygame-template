@@ -1,8 +1,9 @@
 [project]
-name = "pygame-template"
+name = "my-game"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
+# TODO: Consider restricting python subversion with "==3.12.*"
 requires-python = ">=3.12"
 dependencies = [
     "pygame-ce>=2.5.3",
@@ -10,10 +11,18 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "mypy>=1.17.1",  # Static type checker. TODO: Switch to Ty when released.
+    "mypy>=1.17.1",  # Static type checker (Note: Replace with Ty when released?).
     "pre-commit>=4.3.0",  # See .pre-commit-config.yaml
     "ruff>=0.12.11",  # Linter. 
 ]
+
+[project.scripts]
+my-game = "my_game.main:main"
+
+# Including this to install project files into venv.
+[build-system]
+requires = ["uv_build>=0.9"]
+build-backend = "uv_build"
 
 [tool.ruff]
 line-length = 120
@@ -56,4 +65,11 @@ ignore = [
 unfixable = [
   "SIM222", # automatic fix might obscure issue
   "SIM223", # automatic fix might obscure issue
+]
+
+[tool.pytest.ini_options]
+# importlib is best practice
+# https://docs.pytest.org/en/stable/explanation/goodpractices.html
+addopts = [
+    "--import-mode=importlib",
 ]
