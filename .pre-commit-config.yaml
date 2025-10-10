@@ -1,5 +1,5 @@
-default_language_version:
-    python: python3.13
+# default_language_version:
+#     python: python3.13
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -26,13 +26,13 @@ repos:
     hooks:
     -   id: mypy
         name: mypy
-        entry: poetry run mypy
+        entry: uv run mypy
         language: system
         require_serial: true
         types: [python]
     -   id: pytest
         name: pytest
-        entry: poetry run pytest
+        entry: uv run pytest
         language: system
         pass_filenames: false
         always_run: true
