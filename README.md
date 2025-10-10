@@ -48,7 +48,7 @@ TODO: PyInstaller github action
 
 ### Linux
 
-See [setting up dev environment](#How-to-setup-development-environment).  
+See [setting up dev environment](#How-to-setup-development-environment).
 TODO: PyInstaller github action
 
 

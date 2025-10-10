@@ -21,17 +21,15 @@ class StateManager:
     """Control class for entire project. Contains the game loop, and contains
     the event_loop which passes events to States as needed. Logic for flipping
     states is also found here."""
-    def __init__(self, states: dict[type[State], State], starting_state: type[State], caption: str):
+
+    def __init__(self, screen: pg.Surface, states: dict[type[State], State], starting_state: type[State], caption: str):
         """Initialize the StateManager with a dictionary of states and the starting state."""
 
+        self.screen: pg.Surface = screen
         self.state_dict: dict[type[State], State] = states
         self.state: State = self.state_dict[starting_state]
-
-        screen = pg.display.get_surface()
-        assert screen is not None, "Display surface not initialized"
-        self.screen: pg.Surface = screen
-
         self.caption: str = caption  # Caption for the window.
+
         self.quit: bool = False  # Set to True to exit program.
         self.clock: pg.Clock = pg.time.Clock()
         self.fps: float = 60.0  # Used to limit the framerate.
@@ -67,7 +65,7 @@ class StateManager:
 
         dt: Time in seconds since last frame.
         """
-        self.current_time = pg.time.get_ticks()/1000.0
+        self.current_time = pg.time.get_ticks() / 1000.0
         if self.state.quit:
             self.quit = True
         elif self.state.done:
@@ -88,7 +86,7 @@ class StateManager:
         """Main loop for entire program."""
 
         while not self.quit:
-            time_delta = self.clock.tick(self.fps)/1000.0
+            time_delta = self.clock.tick(self.fps) / 1000.0
             self.event_loop()
             self.update(time_delta)
             pg.display.update()
@@ -103,6 +101,7 @@ class State(ABC):
     No direct instances of this class should be created. get_event and update
     must be overloaded in the childclass.  startup and cleanup need to be
     overloaded when there is data that must persist between States."""
+
     def __init__(self):
         # Time in seconds since the State started.
         self.start_time: float = 0.0
@@ -145,7 +144,9 @@ class State(ABC):
         """Update function for state. Must be overloaded in children."""
         pass
 
-    def render_font(self, font: pg.Font, msg, color: pg.typing.ColorLike, center: pg.Vector2) -> tuple[pg.Surface, pg.Rect]:
+    def render_font(
+        self, font: pg.Font, msg, color: pg.typing.ColorLike, center: pg.Vector2
+    ) -> tuple[pg.Surface, pg.Rect]:
         """Returns the rendered font surface and its rect centered on center.
 
         TODO: Move to seperate utility module?
