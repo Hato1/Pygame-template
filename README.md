@@ -36,6 +36,8 @@ Tired of typing `uv run` before every command? Activate the virtual environment 
 
 ### Web
 
+Careful! Mobile users tend not to have keyboards or mice. Pygbag will treat screen taps as left clicks.
+
 TODO: Pygbag github action
 
 ### Windows EXE
@@ -63,5 +65,7 @@ TODO: PyInstaller github action
 ### What is Ruff?
 
 ### What is Pytest?
+
+### What is a state system?
 
 Answers for frequently asked questions cost extra.
