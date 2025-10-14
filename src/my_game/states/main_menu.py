@@ -1,6 +1,6 @@
 import pygame as pg
 
-from my_game.states.game import Game
+import my_game.states.game
 from my_game.utils.state_manager import State
 
 
@@ -12,7 +12,7 @@ class MainMenu(State):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_RETURN:
                 self.done = True
-                self.next = Game
+                self.next = my_game.states.game.Game
 
     def update(self, surface, keys, current_time, dt):
         surface.fill(pg.Color("blue"))
