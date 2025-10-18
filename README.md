@@ -19,7 +19,6 @@ After copying the template, follow these steps:
 1. First [set up the development environment](#How-to-setup-development-environment).
 2. Install pre-commit with `uv run pre-commit install`. Now when you attempt to commit, the scripts in `.pre-commit-config` will run automatically.
 
-
 ## How to setup development environment
 
 1. Install [dependency manager UV](https://docs.astral.sh/uv/getting-started/installation/).
@@ -30,7 +29,6 @@ After copying the template, follow these steps:
 VSCode should automatcally find the virtual environment created by UV.
 
 Tired of typing `uv run` before every command? Activate the virtual environment with `source .venv/bin/activate` on unix or `.venv\Scripts\activate` on Windows.
-
 
 ## How to build and package
 
@@ -46,11 +44,18 @@ TODO: PyInstaller github action
 
 ### MacOS APP
 
+As a rule of thumb, export on the oldest os you want to be able to run the program.
+
+intel vs ARM architectures.
+
 TODO: PyInstaller github action
 
 ### Linux
 
 See [setting up dev environment](#How-to-setup-development-environment).
+
+As a rule of thumb, export on the oldest os you want to be able to run the program
+
 TODO: PyInstaller github action
 
 

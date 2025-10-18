@@ -29,4 +29,4 @@ def main():
 
 
 if __name__ == "__main__":
-    raise ValueError("Run using `uv run my-game`")
+    main()

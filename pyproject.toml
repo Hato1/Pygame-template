@@ -11,10 +11,11 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "mypy>=1.17.1",  # Static type checker (Note: Replace with Ty when released?).
-    "pre-commit>=4.3.0",  # See .pre-commit-config.yaml
-    "ruff>=0.12.11",  # Linter.
-    "pytest>=8.4.2",  # Testing framework.
+    "mypy>=1.17.1", # Static type checker (Note: Replace with Ty when released?).
+    "pre-commit>=4.3.0", # See .pre-commit-config.yaml
+    "ruff>=0.12.11", # Linter.
+    "pytest>=8.4.2", # Testing framework.
+    "pyinstaller>=6.16.0",
 ]
 
 [project.scripts]
