@@ -17,7 +17,7 @@ class MainMenu(State):
                 # and to keep the reference short.
                 self.next = game.Game
 
-    def update(self, surface, keys, current_time, dt):
+    def update(self, surface_rect, keys, current_time, dt):
         pass
 
     def draw(self, surface, keys, current_time, dt):

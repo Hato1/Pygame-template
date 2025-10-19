@@ -37,9 +37,9 @@ class Monster:
         self.rect = self.SPRITE[0].get_rect(center=(self.position))
 
     @classmethod
-    def create_monster(cls, screen: pg.Surface, target: pg.Vector2) -> Self:
+    def create_monster(cls, screen_rect: pg.Rect, target: pg.Vector2) -> Self:
         """Create a monster with a default position, vector, and speed."""
-        position = get_random_position_on_rect_perimeter(screen.get_rect())
+        position = get_random_position_on_rect_perimeter(screen_rect)
         # Aim the monster towards the target position.
         vector = target - position
         speed = random.uniform(0.05, 0.5)
@@ -63,8 +63,8 @@ class Player:
     SPRITE = Images.MONSTER_FRAME_1.load()
     INITIAL_HEALTH_CAPACITY = 3
 
-    def __init__(self):
-        self.position: pg.Vector2 = pg.Vector2(0, 0)
+    def __init__(self, position: pg.Vector2):
+        self.position: pg.Vector2 = position
         self.velocity = pg.Vector2(0, 0)
         self.max_health = self.INITIAL_HEALTH_CAPACITY
         self.health = self.max_health
@@ -97,12 +97,12 @@ class Game(State):
         self.monsters: list[Monster]
         self.player: Player
 
-    def startup(self, current_time: float, persistant: dict[str, Any], previous: type[State]):
-        super().startup(current_time, persistant, previous)
+    def startup(self, current_time: float, persistant: dict[str, Any], previous: type[State], surface_rect: pg.Rect):
+        super().startup(current_time, persistant, previous, surface_rect)
         self.monster_meter = 0
         self.monster_interval = self.DEFAULT_MONSTER_INTERVAL
         self.monsters = []
-        self.player = Player()
+        self.player = Player(pg.Vector2(surface_rect.center))
 
     def get_event(self, event: pg.Event):
         if event.type == pg.KEYDOWN:
@@ -122,11 +122,11 @@ class Game(State):
             heart = heart_full if i < self.player.health else empty_heart
             surface.blit(heart, (5 + i * (heart.get_width() + 5), 5))
 
-    def update_monster_spawner(self, surface, dt: float):
+    def update_monster_spawner(self, surface_rect: pg.Rect, dt: float):
         """Spawns monsters over time based on the monster meter and interval."""
         self.monster_meter += dt
         while self.monster_meter > self.monster_interval:
-            new_monster = Monster.create_monster(surface, self.player.position)
+            new_monster = Monster.create_monster(surface_rect, self.player.position)
             self.monsters.append(new_monster)
             self.monster_meter -= self.monster_interval
 
@@ -151,8 +151,8 @@ class Game(State):
         if self.monster_interval < self.MINIMUM_MONSTER_INTERVAL:
             self.monster_interval = self.MINIMUM_MONSTER_INTERVAL
 
-    def update(self, surface, keys, current_time, dt):
-        self.update_monster_spawner(surface, dt)
+    def update(self, surface_rect, keys, current_time, dt):
+        self.update_monster_spawner(surface_rect, dt)
         self.update_player_movement(keys, dt)
 
         for monster in self.monsters:

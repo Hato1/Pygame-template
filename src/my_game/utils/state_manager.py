@@ -84,7 +84,7 @@ class StateManager:
             self.quit = True
         elif self.state.done:
             self.change_state()
-        self.state.update(self.screen, self.keys, self.current_time, dt)
+        self.state.update(self.screen.get_rect(), self.keys, self.current_time, dt)
         self.state.draw(self.screen, self.keys, self.current_time, dt)
 
     def change_state(self):
@@ -95,7 +95,7 @@ class StateManager:
 
         persistant_variables = self.state.cleanup()
         self.state = self.state_dict[next]
-        self.state.startup(self.current_time, persistant_variables, previous)
+        self.state.startup(self.current_time, persistant_variables, previous, self.screen.get_rect())
 
     def main(self):
         """Main loop for entire program."""
@@ -166,7 +166,7 @@ class State(ABC):
         """Processes events that were passed from the main event loop."""
         pass
 
-    def startup(self, current_time: float, persistant: dict[str, Any], previous: type[State]):
+    def startup(self, current_time: float, persistant: dict[str, Any], previous: type[State], surface_rect: pg.Rect):
         """Add variables passed in persistant to the proper attributes and
         set the start time of the State to the current time."""
         self.persist = persistant
@@ -180,10 +180,10 @@ class State(ABC):
         return self.persist
 
     @abstractmethod
-    def update(self, surface: pg.Surface, keys, current_time: float, dt: float):
+    def update(self, surface_rect: pg.Rect, keys, current_time: float, dt: float):
         """Update function for state. Must be overloaded in children.
 
-        surface: The surface to draw to.
+        surface_rect: Rect representing the surface dimensions.
         keys: The current state of all keyboard buttons.
         current_time: Current time in seconds since program launched.
         dt: Time in seconds since last frame.
