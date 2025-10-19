@@ -85,6 +85,7 @@ class StateManager:
         elif self.state.done:
             self.change_state()
         self.state.update(self.screen, self.keys, self.current_time, dt)
+        self.state.draw(self.screen, self.keys, self.current_time, dt)
 
     def change_state(self):
         """Cleanup the current state, switch to and startup the next state."""
@@ -135,6 +136,12 @@ class State(ABC):
 
         update(surface, keys, current_time, dt):
             Abstract method to update the state logic.
+            Don't draw anything to the surface here.
+            Must be implemented by subclasses.
+
+        draw(surface, keys, current_time, dt):
+            Abstract method to draw the state to the given surface.
+            Don't update game logic here.
             Must be implemented by subclasses.
     """
 
@@ -174,6 +181,17 @@ class State(ABC):
 
     @abstractmethod
     def update(self, surface: pg.Surface, keys, current_time: float, dt: float):
+        """Update function for state. Must be overloaded in children.
+
+        surface: The surface to draw to.
+        keys: The current state of all keyboard buttons.
+        current_time: Current time in seconds since program launched.
+        dt: Time in seconds since last frame.
+        """
+        pass
+
+    @abstractmethod
+    def draw(self, surface: pg.Surface, keys, current_time: float, dt: float):
         """Update function for state. Must be overloaded in children.
 
         surface: The surface to draw to.

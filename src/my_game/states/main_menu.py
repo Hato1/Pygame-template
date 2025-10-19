@@ -18,4 +18,7 @@ class MainMenu(State):
                 self.next = game.Game
 
     def update(self, surface, keys, current_time, dt):
+        pass
+
+    def draw(self, surface, keys, current_time, dt):
         surface.fill(pg.Color("blue"))

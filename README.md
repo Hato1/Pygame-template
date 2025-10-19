@@ -38,6 +38,12 @@ Careful! Mobile users tend not to have keyboards or mice. Pygbag will treat scre
 
 TODO: Pygbag github action
 
+### Desktop
+
+Desktop builds can be done with Pyinstaller. From the project directory, run `uv run pyinstaller pyinstaller.spec` to build the application for your operating system.
+
+As a rule of thumb, build on the oldest OS you want to be able to support as applications are often forwards compatible, but not backwards compatible.
+
 ### Windows EXE
 
 TODO: PyInstaller github action

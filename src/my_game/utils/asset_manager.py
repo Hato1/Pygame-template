@@ -19,7 +19,8 @@ from pathlib import Path
 
 import pygame as pg
 
-ASSETS_PATH = files("my_game.assets")
+MODULE_PATH = files("my_game")
+ASSETS_PATH = MODULE_PATH / "assets"
 IMAGES_PATH = ASSETS_PATH / "images"
 SOUNDS_PATH = ASSETS_PATH / "sounds"
 FONTS_PATH = ASSETS_PATH / "fonts"
@@ -29,9 +30,8 @@ UI_PATH = ASSETS_PATH / "ui"
 
 @unique
 class Images(Enum):
-    PALADIN = "paladin.png"
-    TOWER = "tower.png"
-    ZOMBIE = "zombie.png"
+    MONSTER_FRAME_0 = "monster/frame_0.png"
+    MONSTER_FRAME_1 = "monster/frame_1.png"
 
     @cache
     def load(self) -> pg.Surface:
@@ -82,11 +82,21 @@ class Levels(Enum):
 
 @unique
 class UIElements(Enum):
-    BUTTON = "button.png"
-    PANEL = "panel.png"
+    HEART_FULL = "healthbar/heart_full.png"
+    HEART_EMPTY = "healthbar/heart_empty.png"
+    NUMBER_0 = "numbers/0.png"
+    NUMBER_1 = "numbers/1.png"
+    NUMBER_2 = "numbers/2.png"
+    NUMBER_3 = "numbers/3.png"
+    NUMBER_4 = "numbers/4.png"
+    NUMBER_5 = "numbers/5.png"
+    NUMBER_6 = "numbers/6.png"
+    NUMBER_7 = "numbers/7.png"
+    NUMBER_8 = "numbers/8.png"
+    NUMBER_9 = "numbers/9.png"
 
     @cache
     def load(self) -> pg.Surface:
-        with as_file(IMAGES_PATH / self.value) as path:
+        with as_file(UI_PATH / self.value) as path:
             assert path.is_file(), f"Image file not found: {path}"
             return pg.image.load(path).convert_alpha()
