@@ -8,6 +8,7 @@ from my_game.states.main_menu import MainMenu
 from my_game.utils.state_manager import State, StateManager
 
 ORIGINAL_CAPTION = "My Game"
+SCREEN_SIZE = (128, 128)
 
 
 def main():
@@ -15,7 +16,7 @@ def main():
 
     # Initialization
     pg.init()
-    screen = pg.display.get_surface()
+    screen = pg.display.set_mode(SCREEN_SIZE, pg.SCALED)
     assert screen is not None, "Pygame display surface not initialized."
     pg.display.set_caption(ORIGINAL_CAPTION)
 
