@@ -76,12 +76,24 @@ class Player:
         delta = pg.Vector2.normalize(delta) * 2
         self.velocity += delta
 
-    def update(self, dt: float):
+    def clamp_position(self, surface_rect: pg.Rect):
+        """Keep the player within the bounds of the given rect."""
+        half_width = self.rect.width / 2
+        half_height = self.rect.height / 2
+        self.position.x = pg.math.clamp(
+            self.position.x, surface_rect.left + half_width, surface_rect.right - half_width
+        )
+        self.position.y = pg.math.clamp(
+            self.position.y, surface_rect.top + half_height, surface_rect.bottom - half_height
+        )
+
+    def update(self, surface_rect: pg.Rect, dt: float):
         self.position += self.velocity * dt
         self.velocity *= 0.95  # Friction
+        self.clamp_position(surface_rect)
+        self.rect = self.SPRITE.get_rect(center=(self.position))
 
     def draw(self, surface):
-        self.rect = self.SPRITE.get_rect(center=(self.position))
         surface.blit(self.SPRITE, self.rect)
 
 
@@ -130,7 +142,7 @@ class Game(State):
             self.monsters.append(new_monster)
             self.monster_meter -= self.monster_interval
 
-    def update_player_movement(self, keys, dt: float):
+    def update_player_movement(self, surface_rect: pg.Rect, keys, dt: float):
         """Update player position based on input keys."""
         movement = pg.Vector2(0, 0)
         if keys[pg.K_w] or keys[pg.K_UP]:
@@ -143,7 +155,7 @@ class Game(State):
             movement.x += 1
         # TODO: Controller support?
         self.player.increase_velocity(movement)
-        self.player.update(dt)
+        self.player.update(surface_rect, dt)
 
     def update_difficulty(self, dt: float):
         """Gradually increase game difficulty over time."""
@@ -153,7 +165,7 @@ class Game(State):
 
     def update(self, surface_rect, keys, current_time, dt):
         self.update_monster_spawner(surface_rect, dt)
-        self.update_player_movement(keys, dt)
+        self.update_player_movement(surface_rect, keys, dt)
 
         for monster in self.monsters:
             monster.update(dt)
