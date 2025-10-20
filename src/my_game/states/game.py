@@ -39,7 +39,10 @@ class Monster:
     @classmethod
     def create_monster(cls, screen_rect: pg.Rect, target: pg.Vector2) -> Self:
         """Create a monster with a default position, vector, and speed."""
-        position = get_random_position_on_rect_perimeter(screen_rect)
+        half_sprite_dims = cls.SPRITE[0].get_width() / 2, cls.SPRITE[0].get_height() / 2
+        # Make sure enemies spawn just outside the screen.
+        spawn_area = screen_rect.inflate(half_sprite_dims)
+        position = get_random_position_on_rect_perimeter(spawn_area)
         # Aim the monster towards the target position.
         vector = target - position
         speed = random.uniform(0.05, 0.5)
