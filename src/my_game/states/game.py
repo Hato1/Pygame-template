@@ -23,7 +23,15 @@ def get_random_position_on_rect_perimeter(rect: pg.Rect) -> pg.Vector2:
 
 
 class Monster:
-    """A simple monster class for demonstration purposes."""
+    """A simple monster class for demonstration purposes.
+
+    Monsters start just outside the screen and move in a straight
+    line so that they intersect with their target.
+
+    Monster's never despawn; they just keep going indefinitely.
+    That's ok though because they have negligible resource usage.
+
+    """
 
     SPRITE = (
         Images.MONSTER_FRAME_0.load(),
@@ -61,10 +69,16 @@ class Monster:
 
 
 class Player:
-    """A simple player class for demonstration purposes."""
+    """A simple player class for demonstration purposes.
+
+    The directional arrows or WASD keys control the players velocity instead of position.
+    This gives the player a smoother, more 'slidey' movement experience.
+    """
 
     SPRITE = Images.MONSTER_FRAME_1.load()
     INITIAL_HEALTH_CAPACITY = 3
+    THRUST_SCALAR = 2  # How quickly the player accelerates.
+    FRICTION = 0.05  # How quickly the player slows down each second.
 
     def __init__(self, position: pg.Vector2):
         self.position: pg.Vector2 = position
@@ -76,7 +90,7 @@ class Player:
     def increase_velocity(self, delta: pg.Vector2):
         if not delta:
             return
-        delta = pg.Vector2.normalize(delta) * 2
+        delta = pg.Vector2.normalize(delta) * self.THRUST_SCALAR
         self.velocity += delta
 
     def clamp_position(self, surface_rect: pg.Rect):
@@ -92,7 +106,12 @@ class Player:
 
     def update(self, surface_rect: pg.Rect, dt: float):
         self.position += self.velocity * dt
-        self.velocity *= 0.95  # Friction
+        print(dt)
+        # Make friction dt-aware so deceleration is frame-rate independent.
+        # Use exponential decay so that FRICTION represents the per-second
+        # retention factor when dt is in seconds. For small dt this approximates
+        # linear scaling but remains stable for variable frame times.
+        self.velocity *= self.FRICTION**dt
         self.clamp_position(surface_rect)
         self.rect = self.SPRITE.get_rect(center=(self.position))
 
