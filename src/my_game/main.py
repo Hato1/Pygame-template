@@ -16,7 +16,7 @@ def main():
 
     # Initialization
     pg.init()
-    screen = pg.display.set_mode(SCREEN_SIZE, pg.SCALED)
+    screen = pg.display.set_mode(SCREEN_SIZE, pg.SCALED | pg.RESIZABLE)
     assert screen is not None, "Pygame display surface not initialized."
     pg.display.set_caption(ORIGINAL_CAPTION)
 
