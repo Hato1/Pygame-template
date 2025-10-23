@@ -74,8 +74,6 @@ jobs:
       - name: Build executable with PyInstaller
         run: |
           uv run python tools/create_exe.py
-          ls dist/
-          rm -r dist/!(*.app)  # Keep .app bundle, remove multifile executable.
           tar -czvf linux_release.tar.gz dist/*
 
       - name: Upload Artifact
@@ -113,7 +111,7 @@ jobs:
       - name: Build executable with PyInstaller
         run: |
           uv run python tools/create_exe.py
-          tar -czvf macos_release.tar.gz dist/*
+          tar -czvf macos_release.tar.gz dist/*.app
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
