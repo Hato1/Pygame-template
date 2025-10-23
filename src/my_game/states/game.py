@@ -78,7 +78,7 @@ class Player:
     SPRITE = Images.MONSTER_FRAME_1.load()
     INITIAL_HEALTH_CAPACITY = 3
     THRUST_SCALAR = 2  # How quickly the player accelerates.
-    FRICTION = 0.05  # How quickly the player slows down each second.
+    FRICTION = 0.05  # Percentage of speed lost each second.
 
     def __init__(self, position: pg.Vector2):
         self.position: pg.Vector2 = position
