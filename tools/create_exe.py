@@ -56,14 +56,13 @@ def build() -> None:
         [
             str(files(NAME) / "main.py"),
             # '--clean',
-            "-n",
-            f"{NAME}-{VERSION}-{PLATFORM}",
+            *("-n", f"{NAME}-{VERSION}-{PLATFORM}"),
             # Onefile mode is not recommended due to long load times and antivirus issues.
             # Especially on MacOS where an app bundle is preferred.
             # '--onefile',
             "--windowed",
             "--noconfirm",
-            # '--log-level', 'WARN',
+            *("--log-level", "WARN"),
             *hidden_imports,
             *add_data,
             "-i",
