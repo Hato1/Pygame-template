@@ -2,13 +2,16 @@
 
 This template provides:
 
-* A basic pygame project layout with main loop.
+* A state machine pattern implementation for scenes (Main menu, level1, etc).
+* A basic example game.
 * Dependency management with UV.
 * Pre-commit configured for:
   * Static type checking with Mypy.
   * Code linting with Ruff.
 * A configured github action for automatic web deployment with Pygbag.
 * Pyinstaller configured for single file EXE builds on Windows.
+* A centralised asset loader that works irrespective of packaging method.
+* Pytest with a few example tests
 
 
 
