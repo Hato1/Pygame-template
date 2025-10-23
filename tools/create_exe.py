@@ -4,17 +4,17 @@ Running this script will create an executable for the current platform in the di
 A build directory and a .spec file will also be created in the project root, but these can be
 safely deleted after the build is complete.
 
-It uses the program name and version from pyproject.toml to name the
-output files.
+It uses the program name and version from pyproject.toml to name the output files.
 
-Requires Python 3.11+ due to tomllib usage.
+Requires Python 3.11+ due to tomllib usage. Pillow is required for converting PNG icons to
+ICO and ICNS for Windows and Mac builds respectively.
 
-Mac apps built on ARM Macs may not run on Intel Macs. The reverse should
-be ok as ARM Macs can run x86_64 binaries via Rosetta2.
+Mac apps built on ARM Macs may not run on Intel Macs. The reverse should be ok as ARM Macs
+can run x86_64 binaries via Rosetta2.
 
 Data files not loaded via the Asset Manager / Importlib may fail to be included or found
-unless configured correctly. This could be operating system or --onefile dependent. Run
-the executable from the command line to see any error messages.
+unless configured correctly. This could be operating system or --onefile dependent.
+Run the executable from the command line to see any error messages.
 
 Pyinstaller Docs: https://pyinstaller.org/en/stable/usage.html
 """
