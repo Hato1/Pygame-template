@@ -111,7 +111,12 @@ jobs:
       - name: Build executable with PyInstaller
         run: |
           uv run python tools/create_exe.py
-          tar -czvf macos_release.tar.gz dist/*.app
+          echo "If MacOS complains about a damaged app, open terminal and type:" > dist/readme.txt
+          echo "xattr -d com.apple.quarantine {APP}" >> dist/readme.txt
+          echo "Instead of typing {APP}, drag and drop the application into the" >> dist/readme.txt
+          echo "terminal window, then hit enter. This removes the quarantine" >> dist/readme.txt
+          echo "attribute and the program should run." >> dist/readme.txt
+          tar -czvf macos_release.tar.gz dist/*.app dist/readme.txt
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
