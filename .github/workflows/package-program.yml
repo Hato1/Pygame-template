@@ -39,7 +39,7 @@ jobs:
 
       - name: Build executable with PyInstaller
         run: |
-          uv run pyinstaller pyinstaller.spec
+          uv run python tools/create_exe.py
           Compress-Archive -Path dist/* -Destination windows_release.zip
           dir
 
@@ -74,7 +74,7 @@ jobs:
 
       - name: Build executable with PyInstaller
         run: |
-          uv run pyinstaller pyinstaller.spec
+          uv run python tools/create_exe.py
           tar -czvf linux_release.tar.gz dist/*
           dir
 
@@ -112,7 +112,7 @@ jobs:
 
       - name: Build executable with PyInstaller
         run: |
-          uv run pyinstaller pyinstaller.spec
+          uv run python tools/create_exe.py
           tar -czvf macos_release.tar.gz dist/*
           dir
 
