@@ -61,3 +61,8 @@ coll = COLLECT(
     upx_exclude=[],
     name=f'{name}-{version}-{platform}',
 )
+
+app = BUNDLE(coll,
+         name=f'{name}-{version}-{platform}.app',
+         icon=None,
+         bundle_identifier=None)
