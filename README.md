@@ -1,77 +1,131 @@
-# Template for Pygame projects
+# 🎮 Pygame Project Template
 
-This template provides:
+A clean, production-ready template for building structured Pygame projects with modern Python tooling.
 
-* A state machine pattern implementation for scenes (Main menu, level1, etc).
-* A basic example game.
-* Dependency management with UV.
-* Pre-commit configured for:
-  * Static type checking with Mypy.
-  * Code linting with Ruff.
-* Pyinstaller configured for single file EXE, APP and binary builds on Windows, Mac and Linux.
-* Automatic Windows EXE, Mac APP, and Linux Binary builds without needing to have these operating systems yourself.
-* A centralised asset loader that works irrespective of packaging method. This includes Pygbag web builds.
-* Pytest with a few example tests
+### ✨ Features:
+* 🧠 State machine architecture (Main Menu, Level1, etc.)
+* 🎨 Centralised asset loader
+  * Works in packaged builds
+  * Compatible with Pygbag web builds
+* 🎮 Example playable game
+* 📦 Dependency management with UV
+* 🧹 Pre-commit hooks configured for:
+  * Static type checking with Mypy
+  * Linting with Ruff
+* 🧪 Pytest with example tests
+* 🏗️ PyInstaller configuration for:
+  * Windows .exe
+  * macOS .app
+  * Linux binary
+* 🚀 Automatic cross-platform builds via GitHub Actions
+  * Build for Windows, Mac, and Linux - even if you don't own those systems
 
-
-
-## How to use this template
-
-After copying the template, follow these steps:
-
-1. First [set up the development environment](#How-to-setup-development-environment).
-1. 
-
-## How to setup development environment
-
-1. Install [dependency manager UV](https://docs.astral.sh/uv/getting-started/installation/).
-1. Navigate to project directory.
-1. Optionally, install pre-commit hooks: `uv run pre-commit install`.
-1. Run test game: `uv run run-game`.
-
-Ensure your IDE is using the correct virtual environment created by UV. VSCode should find this automatcally.
-
-Tired of typing `uv run` before every command? Activate the virtual environment with `source .venv/bin/activate` on unix or `.venv\Scripts\activate` on Windows.
-
-## Automatic builds
-
-After pushing your changes to Github, create a release. This will trigger a github action that will build your project for Mac, Windows and Linux and automatically attach the resulting EXE, APP and Binary to the release.
-
-TODO: Automatic webapp builds with Pygbag
-
-## How to build and package manually
-
-This is useful for debugging and customising build settings.
-
-### Web
-
-Careful! This makes your game available to mobile users who tend not to have keyboards or mice. Pygbag will treat screen taps as left clicks.
-
-TODO: Wait for Pygbag newer than 0.9.2 before writing this section.
-
-### Windows EXE / MacOS App / Linux Binary
-
-Program will build for the client OS, environment and architecture (i.e x86 or ARM). As a rule of thumb, export on the oldest os you want to be able to run the program as applications are often forwards compatible, but not backwards compatible.
-
-`uv run tools/create_exe.py`
-
-This will populate a build directory before producing the build in a dist directory.
+## Getting Started
+1. [Install UV](https://docs.astral.sh/uv/getting-started/installation/)
+2. Navigate to your project
+```bash
+cd your-project-folder
+```
+3. (Optional) Install pre-commit hooks.
+```bash
+uv run pre-commit install
+```
+4. Run the test game
+```bash
+uv run run-game
+```
 
 
-## FAQ
+>####  💡 Optional: Activate the virtual environment  
+> If you're tired of typing `uv run`, this will activate your environment for the session:
+> ```bash
+> # On macOS and Linux.
+> source .venv/bin/activate
+> 
+> # On Windows.
+> .venv\Scripts\activate
+> ```
+> Now you can run the test game with simply `run-game`.
 
-### What is UV?
+> 💡 Make sure your IDE is using the virtual environment created by UV.
+> * VSCode should detect it automatically.
+> * If not, manually select .venv.
 
-### What is Pre-commit?
 
-### What is Mypy?
 
-### What is Ruff?
+## 🏗️ Automatic Builds (Recommended)
 
-### What is Pytest?
+After pushing changes to GitHub:
 
-### What is a state system?
+1. Create a Release
+2. GitHub Actions will automatically:
+    * Build Windows .exe
+    * Build macOS .app
+    * Build Linux binary
+    * Attach them all to the release
 
-### How do the github actions / automatic builds work?
 
-Answers for frequently asked questions cost extra.
+## 🔧 Manual Builds
+
+Use this if you need to debug or customize build settings.
+
+
+### 🌐 Web Build (Pygbag)
+
+> ⚠️ Warning:
+> Web builds allow mobile users to play.  
+Mobile users often do not have keyboards or mice.  
+> Pygbag treats screen taps as left mouse clicks.
+
+TODO: Update this section when Pygbag > 0.9.2 is stable.
+
+---
+
+### 🖥️ Windows EXE / macOS App / Linux Binary
+
+Builds for the current OS and architecture (x86 / ARM).
+
+> 💡 Rule of thumb:
+Build on the oldest OS version you want to support.
+Applications are usually forward-compatible, not backward-compatible.
+
+Run:
+```bash
+uv run tools/create_exe.py
+```
+This will:
+1. Populate a `build` directory
+2. Output the final executable in `dist` in both "one file" and "many file" formats.
+
+
+## ❓ FAQ
+>### What is UV and why should I use it?
+>
+>TODO
+
+>### What is Pre-commit?
+>A tool that runs checks (linting, formatting, typing) before each commit. After checking out the project it must be installed to run. This project is configured to run Mypy and Ruff checks by default.
+
+>### What is Mypy and why should I use it?
+>
+>TODO
+
+>###  What is Ruff and why should I use it?
+>
+>TODO
+
+>### What is Pytest and why should I use it?
+>
+>TODO
+
+>### What is a state system and why should I use it?
+>A state system is a clean way to manage game screens like:
+>* Main Menu
+>* Settings
+>* Level 1
+>* Game Over  
+>Without it, things can get confusing and it's easy not to properly set up, pack up and reset differents parts of a project. This can lead to bugs and difficult to maintain code.
+
+>### How do GitHub Actions builds work?
+>
+>TODO
