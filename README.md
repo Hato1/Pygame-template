@@ -8,9 +8,9 @@ This template provides:
 * Pre-commit configured for:
   * Static type checking with Mypy.
   * Code linting with Ruff.
-* A configured github action for automatic web deployment with Pygbag.
-* Pyinstaller configured for single file EXE builds on Windows.
-* A centralised asset loader that works irrespective of packaging method.
+* Pyinstaller configured for single file EXE, APP and binary builds on Windows, Mac and Linux.
+* Automatic Windows EXE, Mac APP, and Linux Binary builds without needing to have these operating systems yourself.
+* A centralised asset loader that works irrespective of packaging method. This includes Pygbag web builds.
 * Pytest with a few example tests
 
 
@@ -20,52 +20,42 @@ This template provides:
 After copying the template, follow these steps:
 
 1. First [set up the development environment](#How-to-setup-development-environment).
-2. Install pre-commit with `uv run pre-commit install`. Now when you attempt to commit, the scripts in `.pre-commit-config` will run automatically.
+1. 
 
 ## How to setup development environment
 
 1. Install [dependency manager UV](https://docs.astral.sh/uv/getting-started/installation/).
 1. Navigate to project directory.
-1. Install pre-commit hooks: `uv run pre-commit install`.
-1. Run game: `uv run my-game`.
+1. Optionally, install pre-commit hooks: `uv run pre-commit install`.
+1. Run test game: `uv run run-game`.
 
-VSCode should automatcally find the virtual environment created by UV.
+Ensure your IDE is using the correct virtual environment created by UV. VSCode should find this automatcally.
 
 Tired of typing `uv run` before every command? Activate the virtual environment with `source .venv/bin/activate` on unix or `.venv\Scripts\activate` on Windows.
 
-## How to build and package
+## Automatic builds
+
+After pushing your changes to Github, create a release. This will trigger a github action that will build your project for Mac, Windows and Linux and automatically attach the resulting EXE, APP and Binary to the release.
+
+TODO: Automatic webapp builds with Pygbag
+
+## How to build and package manually
+
+This is useful for debugging and customising build settings.
 
 ### Web
 
-Careful! Mobile users tend not to have keyboards or mice. Pygbag will treat screen taps as left clicks.
+Careful! This makes your game available to mobile users who tend not to have keyboards or mice. Pygbag will treat screen taps as left clicks.
 
-TODO: Pygbag github action
+TODO: Wait for Pygbag newer than 0.9.2 before writing this section.
 
-### Desktop
+### Windows EXE / MacOS App / Linux Binary
 
-Desktop builds can be done with Pyinstaller. From the project directory, run `uv run pyinstaller pyinstaller.spec` to build the application for your operating system.
+Program will build for the client OS, environment and architecture (i.e x86 or ARM). As a rule of thumb, export on the oldest os you want to be able to run the program as applications are often forwards compatible, but not backwards compatible.
 
-As a rule of thumb, build on the oldest OS you want to be able to support as applications are often forwards compatible, but not backwards compatible.
+`uv run tools/create_exe.py`
 
-### Windows EXE
-
-TODO: PyInstaller github action
-
-### MacOS APP
-
-As a rule of thumb, export on the oldest os you want to be able to run the program.
-
-intel vs ARM architectures.
-
-TODO: PyInstaller github action
-
-### Linux
-
-See [setting up dev environment](#How-to-setup-development-environment).
-
-As a rule of thumb, export on the oldest os you want to be able to run the program
-
-TODO: PyInstaller github action
+This will populate a build directory before producing the build in a dist directory.
 
 
 ## FAQ
@@ -81,5 +71,7 @@ TODO: PyInstaller github action
 ### What is Pytest?
 
 ### What is a state system?
+
+### How do the github actions / automatic builds work?
 
 Answers for frequently asked questions cost extra.
