@@ -65,7 +65,7 @@ class StateManager:
                     self.toggle_show_fps(event.key)
                 case pg.KEYUP:
                     self.keys = pg.key.get_pressed()
-            self.state.get_event(event)
+            self.state.handle_event(event)
 
     def toggle_show_fps(self, key):
         """Press f5 to turn on/off displaying the framerate in the caption."""
@@ -97,7 +97,6 @@ class StateManager:
         self.state = self.state_dict[next_state]
         self.state.enter(
             self.screen.get_rect(),
-            current_time=self.current_time,
             payload=persistant_variables,
             previous_state=previous_state,
         )
@@ -159,30 +158,27 @@ class State(ABC):
         self.previous_state: type[State] | None = None
         self.start_time: float = 0.0
 
-    @abstractmethod
-    def get_event(self, event: pg.Event):
-        """Processes events that were passed from the main event loop."""
-        pass
-
     def enter(
         self,
         surface_rect: pg.Rect,
         *,
         previous_state: type[State] | None = None,
         payload: dict[str, Any] | None = None,
-        current_time: float,
-    ):
-        """Initialise state"""
+    ) -> None:
+        """Called when this state becomes the active state."""
         self.persist = payload or {}
         self.previous_state = previous_state
-        # Todo: Get from pygame.time.get_ticks() instead of passing in current_time.
-        self.start_time = current_time
+        self.start_time = pg.time.get_ticks() / 1000.0
 
     def exit(self) -> dict[str, Any]:
-        """Add variables that should persist to the self.persist dictionary.
-        Then reset State.done to False."""
+        """Called before leaving this state."""
         self.done = False
         return self.persist
+
+    @abstractmethod
+    def handle_event(self, event: pg.Event) -> None:
+        """Handle one pygame event."""
+        pass
 
     @abstractmethod
     def update(self, surface_rect: pg.Rect, keys, current_time: float, dt: float):

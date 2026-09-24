@@ -141,18 +141,17 @@ class Game(State):
         self,
         surface_rect: pg.Rect,
         *,
-        current_time: float,
         payload: dict[str, Any] | None = None,
         previous_state: type[State] | None = None,
     ):
-        super().enter(surface_rect, current_time=current_time, payload=payload, previous_state=previous_state)
+        super().enter(surface_rect, payload=payload, previous_state=previous_state)
         self.monster_meter = 0
         self.monster_interval = self.DEFAULT_MONSTER_INTERVAL
         self.monsters = []
         self.player = Player(pg.Vector2(surface_rect.center))
         self.score = 0.0
 
-    def get_event(self, event: pg.Event):
+    def handle_event(self, event: pg.Event):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_RETURN:
                 self.done = True

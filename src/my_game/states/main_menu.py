@@ -8,7 +8,7 @@ class MainMenu(State):
     def __init__(self):
         super().__init__()
 
-    def get_event(self, event: pg.Event):
+    def handle_event(self, event: pg.Event):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_RETURN:
                 self.done = True
