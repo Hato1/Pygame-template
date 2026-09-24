@@ -40,8 +40,8 @@ class StateManager:
         """Initialize the StateManager with a dictionary of states and the starting state."""
 
         self.screen: pg.Surface = screen
-        self.state_dict: dict[type[State], State] = states
-        self.state: State = self.state_dict[starting_state]
+        self.states: dict[type[State], State] = states
+        self.current_state: State = self.states[starting_state]
         self.caption: str = caption  # Caption for the window.
 
         self.quit: bool = False  # Set to True to exit program.
@@ -50,7 +50,18 @@ class StateManager:
         self.show_fps: bool = True  # Display the framerate in the caption.
         self.keys = pg.key.get_pressed()  # Current state of all keyboard buttons.
 
-    def event_loop(self):
+    def change_state(self, new_state: type[State]):
+        """Exit the current state, enter the next state."""
+        previous_state = type(self.current_state)
+        transition_data = self.current_state.exit()
+        self.current_state = self.states[new_state]
+        self.current_state.enter(
+            self.screen.get_rect(),
+            previous_state=previous_state,
+            payload=transition_data,
+        )
+
+    def handle_events(self):
         """Process all events and pass them down to current State.
 
         The f5 key globally turns on/off the display of FPS in the caption
@@ -64,7 +75,7 @@ class StateManager:
                     self.toggle_show_fps(event.key)
                 case pg.KEYUP:
                     self.keys = pg.key.get_pressed()
-            self.state.handle_event(event)
+            self.current_state.handle_event(event)
 
     def toggle_show_fps(self, key):
         """Press f5 to turn on/off displaying the framerate in the caption."""
@@ -78,33 +89,21 @@ class StateManager:
 
         dt: Time in seconds since last frame.
         """
-        if self.state.quit:
+        if self.current_state.quit:
             self.quit = True
-        elif self.state.done:
-            self.change_state()
-        self.state.update(self.screen.get_rect(), self.keys, dt)
-        self.state.draw(self.screen, dt)
-
-    def change_state(self):
-        """Cleanup the current state, switch to and startup the next state."""
-        previous_state, next_state = type(self.state), self.state.next_state
-        if next_state is None:
-            raise ValueError("Next state not set")
-
-        persistant_variables = self.state.exit()
-        self.state = self.state_dict[next_state]
-        self.state.enter(
-            self.screen.get_rect(),
-            payload=persistant_variables,
-            previous_state=previous_state,
-        )
+        elif self.current_state.done:
+            if (next := self.current_state.next_state) is None:
+                raise ValueError("State marked done but next_state not set.")
+            self.change_state(next)
+        self.current_state.update(self.screen.get_rect(), self.keys, dt)
+        self.current_state.draw(self.screen, dt)
 
     def main(self):
         """Main loop for entire program."""
 
         while not self.quit:
             time_delta = self.clock.tick(self.fps) / 1000.0
-            self.event_loop()
+            self.handle_events()
             self.update(time_delta)
             pg.display.update()
             if self.show_fps:
