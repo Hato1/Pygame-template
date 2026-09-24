@@ -1,5 +1,3 @@
-from collections.abc import Iterable
-
 import pygame as pg
 
 from my_game.core.asset_manager import Fonts
@@ -19,7 +17,7 @@ class MainMenu(State):
                 self.done = True
                 self.next_state = game.Game
 
-    def update(self, surface_rect: pg.Rect, keys: Iterable, dt: float) -> None:
+    def update(self, surface_rect: pg.Rect, keys: tuple, dt: float) -> None:
         pass
 
     def draw(self, surface: pg.Surface, dt: float) -> None:

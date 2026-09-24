@@ -4,7 +4,8 @@ TODO: Fix key manager to capture both keypress instances and key holds.
       Use pygame.key.get_pressed() for key holds and key.get_just_pressed
       and key.get_just_released alongside event.pump for instantaneous.
       Actually don't because this will miss non keyboard events.
-TODO: Remove next state from TransitionData.
+      Create a KeyManager class to handle this. Keeps track of each key
+      and press frames.
 """
 
 from abc import ABC, abstractmethod
@@ -13,13 +14,15 @@ from dataclasses import dataclass
 import pygame as pg
 
 
+# TODO: End users should be able to define their own TransitionData class
+# and pass it to the StateManager. They shouldn't have to extend the StateManager here.
 @dataclass
 class TransitionData:
     """Data to be passed between states during a transition."""
 
     previous_state: type[State] | None = None
 
-    # Used to pass the player's score from the game state to the scoreboard state.
+    # Example of a persistent variable that can be passed between states.
     score: float = 0.0
 
 
@@ -27,32 +30,31 @@ class State(ABC):
     """Abstract base class for program states.
 
     Attributes:
-        done (bool): Set to True to leave this state and go to the next one.
-        quit (bool): Set to True to exit the entire program.
-        next_state (type[State] | None): Next state to go to when self.done is True.
-        persist (dict[str, Any]): Dictionary of variables that should persist to the next state.
-        previous_state (type[State] | None): The state that was active before this one.
+        done (bool): Leave this state and go to the next one.
+        quit (bool): Exit the entire program.
+        next_state (type[State] | None): State to transition to when this one is done.
+        transition_data (TransitionData): Data to be passed to the next state.
         start_time (float): Time in seconds since the State started.
 
-    Methods:
-        enter(surface_rect, *, previous_state, payload):
-            Initializes the state with the current time, persistent variables, and previous state.
+        enter(surface_rect: pg.Rect, transition_data: TransitionData):
+            Called when this state becomes the active state.
 
         exit():
-            Prepares persistent variables for the next state and resets the done flag.
+            Called before leaving this state.
+            Last chance to prepare persistent variables for the next state!
 
         handle_event(event: pg.Event):
-            Abstract method to process events from the main event loop.
+            Abstract method to process a single Pygame event.
             Must be implemented by subclasses.
 
-        update(surface, keys, dt):
-            Abstract method to update the state logic.
-            Don't draw anything to the surface here.
+        update(surface_rect: pg.Rect, keys: tuple, dt: float):
+            Abstract method to update program logic from one frame to the next.
+            Don't draw anything to any surfaces here.
             Must be implemented by subclasses.
 
-        draw(surface, dt):
-            Abstract method to draw the state to the given surface.
-            Don't update game logic here.
+        draw(surface: pg.Surface, dt: float):
+            Abstract method to draw the program to the given surface.
+            Don't update program logic here.
             Must be implemented by subclasses.
     """
 
@@ -68,7 +70,11 @@ class State(ABC):
         surface_rect: pg.Rect,
         transition_data: TransitionData,
     ) -> None:
-        """Called when this state becomes the active state."""
+        """Called when this state becomes the active state.
+
+        surface_rect: Rect representing the surface dimensions.
+        transition_data: Data delivered from the previous state.
+        """
         self.start_time = pg.time.get_ticks() / 1000.0
 
     def exit(self) -> TransitionData:
@@ -83,12 +89,11 @@ class State(ABC):
         pass
 
     @abstractmethod
-    def update(self, surface_rect: pg.Rect, keys, dt: float) -> None:
-        """Update game state. Runs every frame.
+    def update(self, surface_rect: pg.Rect, keys: tuple, dt: float) -> None:
+        """Update game logic. Runs every frame.
 
         surface_rect: Rect representing the surface dimensions.
         keys: The current state of all keyboard buttons.
-        current_time: Current time in seconds since program launched.
         dt: Time in seconds since last frame.
         """
         pass
@@ -98,7 +103,6 @@ class State(ABC):
         """Render to the given surface. Runs every frame.
 
         surface: The surface to draw to.
-        current_time: Current time in seconds since program launched.
         dt: Time in seconds since last frame.
         """
         pass
