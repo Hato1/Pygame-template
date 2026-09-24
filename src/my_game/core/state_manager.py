@@ -8,12 +8,96 @@ TODO: Fix key manager to capture both keypress instances and key holds.
 TODO: Store state dict in states/__init__.py and import here.
 """
 
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from typing import Any
 
 import pygame as pg
+
+
+class State(ABC):
+    """Abstract base class for program states.
+
+    Attributes:
+        done (bool): Set to True to leave this state and go to the next one.
+        quit (bool): Set to True to exit the entire program.
+        next_state (type[State] | None): Next state to go to when self.done is True.
+        persist (dict[str, Any]): Dictionary of variables that should persist to the next state.
+        previous_state (type[State] | None): The state that was active before this one.
+        start_time (float): Time in seconds since the State started.
+
+    Methods:
+        enter(surface_rect, *, previous_state, payload):
+            Initializes the state with the current time, persistent variables, and previous state.
+
+        exit():
+            Prepares persistent variables for the next state and resets the done flag.
+
+        handle_event(event: pg.Event):
+            Abstract method to process events from the main event loop.
+            Must be implemented by subclasses.
+
+        update(surface, keys, dt):
+            Abstract method to update the state logic.
+            Don't draw anything to the surface here.
+            Must be implemented by subclasses.
+
+        draw(surface, dt):
+            Abstract method to draw the state to the given surface.
+            Don't update game logic here.
+            Must be implemented by subclasses.
+    """
+
+    def __init__(self):
+        self.done: bool = False
+        self.quit: bool = False
+        self.next_state: type[State] | None = None
+        self.persist: dict[str, Any] = {}
+
+        self.previous_state: type[State] | None = None
+        self.start_time: float = 0.0
+
+    def enter(
+        self,
+        surface_rect: pg.Rect,
+        *,
+        previous_state: type[State] | None = None,
+        payload: dict[str, Any] | None = None,
+    ) -> None:
+        """Called when this state becomes the active state."""
+        self.persist = payload or {}
+        self.previous_state = previous_state
+        self.start_time = pg.time.get_ticks() / 1000.0
+
+    def exit(self) -> dict[str, Any]:
+        """Called before leaving this state."""
+        self.done = False
+        return self.persist
+
+    @abstractmethod
+    def handle_event(self, event: pg.Event) -> None:
+        """Handle one pygame event."""
+        pass
+
+    @abstractmethod
+    def update(self, surface_rect: pg.Rect, keys, dt: float) -> None:
+        """Update game state. Runs every frame.
+
+        surface_rect: Rect representing the surface dimensions.
+        keys: The current state of all keyboard buttons.
+        current_time: Current time in seconds since program launched.
+        dt: Time in seconds since last frame.
+        """
+        pass
+
+    @abstractmethod
+    def draw(self, surface: pg.Surface, dt: float):
+        """Render to the given surface. Runs every frame.
+
+        surface: The surface to draw to.
+        current_time: Current time in seconds since program launched.
+        dt: Time in seconds since last frame.
+        """
+        pass
 
 
 class StateManager:
@@ -116,89 +200,3 @@ class StateManager:
             if self.show_fps:
                 fps = self.clock.get_fps()
                 pg.display.set_caption(f"{self.caption} - {fps:.2f} FPS")
-
-
-class State(ABC):
-    """Abstract base class for program states.
-
-    Attributes:
-        done (bool): Set to True to leave this state and go to the next one.
-        quit (bool): Set to True to exit the entire program.
-        next_state (type[State] | None): Next state to go to when self.done is True.
-        persist (dict[str, Any]): Dictionary of variables that should persist to the next state.
-        previous_state (type[State] | None): The state that was active before this one.
-        start_time (float): Time in seconds since the State started.
-
-    Methods:
-        enter(surface_rect, *, previous_state, payload):
-            Initializes the state with the current time, persistent variables, and previous state.
-
-        exit():
-            Prepares persistent variables for the next state and resets the done flag.
-
-        handle_event(event: pg.Event):
-            Abstract method to process events from the main event loop.
-            Must be implemented by subclasses.
-
-        update(surface, keys, dt):
-            Abstract method to update the state logic.
-            Don't draw anything to the surface here.
-            Must be implemented by subclasses.
-
-        draw(surface, dt):
-            Abstract method to draw the state to the given surface.
-            Don't update game logic here.
-            Must be implemented by subclasses.
-    """
-
-    def __init__(self):
-        self.done: bool = False
-        self.quit: bool = False
-        self.next_state: type[State] | None = None
-        self.persist: dict[str, Any] = {}
-
-        self.previous_state: type[State] | None = None
-        self.start_time: float = 0.0
-
-    def enter(
-        self,
-        surface_rect: pg.Rect,
-        *,
-        previous_state: type[State] | None = None,
-        payload: dict[str, Any] | None = None,
-    ) -> None:
-        """Called when this state becomes the active state."""
-        self.persist = payload or {}
-        self.previous_state = previous_state
-        self.start_time = pg.time.get_ticks() / 1000.0
-
-    def exit(self) -> dict[str, Any]:
-        """Called before leaving this state."""
-        self.done = False
-        return self.persist
-
-    @abstractmethod
-    def handle_event(self, event: pg.Event) -> None:
-        """Handle one pygame event."""
-        pass
-
-    @abstractmethod
-    def update(self, surface_rect: pg.Rect, keys, dt: float) -> None:
-        """Update game state. Runs every frame.
-
-        surface_rect: Rect representing the surface dimensions.
-        keys: The current state of all keyboard buttons.
-        current_time: Current time in seconds since program launched.
-        dt: Time in seconds since last frame.
-        """
-        pass
-
-    @abstractmethod
-    def draw(self, surface: pg.Surface, dt: float):
-        """Render to the given surface. Runs every frame.
-
-        surface: The surface to draw to.
-        current_time: Current time in seconds since program launched.
-        dt: Time in seconds since last frame.
-        """
-        pass
