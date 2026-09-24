@@ -20,17 +20,17 @@ class StateManager:
     """Responsible for managing the different states/scenes of a Pygame application.
 
     Methods:
-        event_loop():
-            Processes all Pygame events and passes them to the current state. Handles global toggling of FPS display.
+        change_state(new_state: type[State]):
+            Cleans up the current state and transitions to the next state, passing persistent variables.
 
-        toggle_show_fps(key):
+        toggle_show_fps():
             Toggles the display of FPS in the window caption when F5 is pressed.
 
-        update(dt):
-            Updates the current state, checks for state changes, and manages quitting.
+        handle_events():
+            Processes all Pygame events and passes them to the current state. Handles global toggling of FPS display.
 
-        change_state():
-            Cleans up the current state and transitions to the next state, passing persistent variables.
+        update(dt: float):
+            Updates the current state, checks for state changes, and manages quitting.
 
         main():
             Runs the main loop, handling events, updating states, rendering, and updating the window caption.
@@ -50,7 +50,9 @@ class StateManager:
         self.show_fps: bool = True  # Display the framerate in the caption.
         self.keys = pg.key.get_pressed()  # Current state of all keyboard buttons.
 
-    def change_state(self, new_state: type[State]):
+        self.current_state.enter(self.screen.get_rect())
+
+    def change_state(self, new_state: type[State]) -> None:
         """Exit the current state, enter the next state."""
         previous_state = type(self.current_state)
         transition_data = self.current_state.exit()
@@ -61,7 +63,7 @@ class StateManager:
             payload=transition_data,
         )
 
-    def toggle_show_fps(self):
+    def toggle_show_fps(self) -> None:
         """Toggle displaying the framerate in the window caption."""
         self.show_fps = not self.show_fps
         if not self.show_fps:
@@ -120,31 +122,30 @@ class State(ABC):
     """Abstract base class for program states.
 
     Attributes:
-        start_time (float): Time in seconds since the State started.
-        current_time (float): Current time in seconds since the program launched.
         done (bool): Set to True to leave this state and go to the next one.
         quit (bool): Set to True to exit the entire program.
-        next (type[State] | None): Next state to go to when self.done is True.
-        previous (type[State] | None): The state that was active before this one.
+        next_state (type[State] | None): Next state to go to when self.done is True.
         persist (dict[str, Any]): Dictionary of variables that should persist to the next state.
+        previous_state (type[State] | None): The state that was active before this one.
+        start_time (float): Time in seconds since the State started.
 
     Methods:
-        get_event(event: pg.Event):
+        enter(surface_rect, *, previous_state, payload):
+            Initializes the state with the current time, persistent variables, and previous state.
+
+        exit():
+            Prepares persistent variables for the next state and resets the done flag.
+
+        handle_event(event: pg.Event):
             Abstract method to process events from the main event loop.
             Must be implemented by subclasses.
 
-        startup(current_time, persistant, previous: type[State]):
-            Initializes the state with the current time, persistent variables, and previous state.
-
-        cleanup():
-            Prepares persistent variables for the next state and resets the done flag.
-
-        update(surface, keys, current_time, dt):
+        update(surface, keys, dt):
             Abstract method to update the state logic.
             Don't draw anything to the surface here.
             Must be implemented by subclasses.
 
-        draw(surface, keys, current_time, dt):
+        draw(surface, dt):
             Abstract method to draw the state to the given surface.
             Don't update game logic here.
             Must be implemented by subclasses.
