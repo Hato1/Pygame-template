@@ -17,7 +17,7 @@ dev = [
     "pytest-env>=1.7.1", # Environment variables for pytest.
     "pyinstaller>=6.22.3", # For building executables on Windows, Mac and Linux.
     "pillow>=12.3.0", # Required for Pyinstaller PNG icon conversion.
-    "pylint>=4.0.9",
+    "pylint>=4.0.9",  # Linter.
 ]
 
 [project.scripts]

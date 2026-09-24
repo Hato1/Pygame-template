@@ -51,11 +51,11 @@ def test_state_transition_uses_explicit_enter_exit_and_payload() -> None:
 
     alpha = manager.current_state
     alpha.done = True
-    alpha.next_state = Beta
-    alpha.persist["score"] = 42
+    alpha.transition_data.next_state = Beta
+    alpha.transition_data.persist["score"] = 42
 
-    manager.change_state(Beta)
+    manager.change_state()
 
     assert manager.current_state is states[Beta]
-    assert manager.current_state.persist == {"score": 42}
-    assert manager.current_state.previous_state is Alpha
+    assert manager.current_state.transition_data.persist == {"score": 42}
+    assert manager.current_state.transition_data.previous_state is Alpha

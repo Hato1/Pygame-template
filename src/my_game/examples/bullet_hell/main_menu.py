@@ -17,7 +17,7 @@ class MainMenu(State):
         if event.type == pg.KEYDOWN:
             if event.key in [pg.K_RETURN, pg.K_SPACE]:
                 self.done = True
-                self.next_state = game.Game
+                self.transition_data.next_state = game.Game
 
     def update(self, surface_rect: pg.Rect, keys: Iterable, dt: float) -> None:
         pass

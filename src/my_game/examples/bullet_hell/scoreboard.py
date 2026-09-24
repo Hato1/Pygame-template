@@ -1,11 +1,11 @@
 # Highest score should be 100 seconds. I have achieved this score.
 from enum import Enum, auto
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 import pygame as pg
 
 from my_game.core.asset_manager import Fonts
-from my_game.core.state_manager import State
+from my_game.core.state_manager import State, TransitionData
 from my_game.examples.bullet_hell import main_menu
 
 
@@ -47,12 +47,10 @@ class Scoreboard(State):
     def enter(
         self,
         surface_rect: pg.Rect,
-        *,
-        payload: dict[str, Any] | None = None,
-        previous_state: type[State] | None = None,
+        transition_data: TransitionData,
     ):
-        super().enter(surface_rect, payload=payload, previous_state=previous_state)
-        if score := self.persist.get("score"):
+        super().enter(surface_rect, transition_data=transition_data)
+        if score := self.transition_data.persist.get("score"):
             self.current_score = score
         else:
             print("No score found in persistent data; defaulting to 0.")
@@ -87,7 +85,7 @@ class Scoreboard(State):
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_RETURN:
                     self.done = True
-                    self.next_state = main_menu.MainMenu
+                    self.transition_data.next_state = main_menu.MainMenu
 
         elif self.sub_state == SubState.NEW_HIGHSCORE:
             if event.type == pg.KEYDOWN:

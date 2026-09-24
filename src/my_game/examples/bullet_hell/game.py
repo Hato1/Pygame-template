@@ -1,10 +1,10 @@
 import random
-from typing import Any, Self
+from typing import Self
 
 import pygame as pg
 
 from my_game.core.asset_manager import Fonts, Images, UIElements
-from my_game.core.state_manager import State
+from my_game.core.state_manager import State, TransitionData
 from my_game.examples.bullet_hell import scoreboard
 
 
@@ -140,11 +140,9 @@ class Game(State):
     def enter(
         self,
         surface_rect: pg.Rect,
-        *,
-        payload: dict[str, Any] | None = None,
-        previous_state: type[State] | None = None,
+        transition_data: TransitionData,
     ) -> None:
-        super().enter(surface_rect, payload=payload, previous_state=previous_state)
+        super().enter(surface_rect, transition_data=transition_data)
         self.monster_meter = 0
         self.monster_interval = self.DEFAULT_MONSTER_INTERVAL
         self.monsters = []
@@ -158,7 +156,7 @@ class Game(State):
                 # assign the class object from the module alias to avoid
                 # circular-import issues that arise from `from ... import ...`
                 # and to keep the reference short.
-                self.next_state = scoreboard.Scoreboard
+                self.transition_data.next_state = scoreboard.Scoreboard
 
     def draw_healthbar(self, surface) -> None:
         """Draws the player's health as hearts in the top-left corner."""
@@ -216,7 +214,7 @@ class Game(State):
 
         if self.player.health <= 0:
             self.done = True
-            self.next_state = scoreboard.Scoreboard
+            self.transition_data.next_state = scoreboard.Scoreboard
 
         self.update_difficulty(dt)
 
@@ -231,7 +229,6 @@ class Game(State):
         self.draw_healthbar(surface)
         self.draw_score(surface)
 
-    def exit(self) -> dict[str, Any]:
-        persist = super().exit()
-        persist["score"] = self.score
-        return self.persist
+    def exit(self) -> TransitionData:
+        transition_data = super().exit()
+        return transition_data

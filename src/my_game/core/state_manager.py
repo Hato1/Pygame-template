@@ -9,9 +9,19 @@ TODO: Store state dict in states/__init__.py and import here.
 """
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 from typing import Any
 
 import pygame as pg
+
+
+@dataclass
+class TransitionData:
+    """Data to be passed between states during a transition."""
+
+    persist: dict[str, Any] = field(default_factory=dict)
+    previous_state: type[State] | None = None
+    next_state: type[State] | None = None
 
 
 class State(ABC):
@@ -50,28 +60,22 @@ class State(ABC):
     def __init__(self):
         self.done: bool = False
         self.quit: bool = False
-        self.next_state: type[State] | None = None
-        self.persist: dict[str, Any] = {}
-
-        self.previous_state: type[State] | None = None
+        self.transition_data: TransitionData = TransitionData()
         self.start_time: float = 0.0
 
     def enter(
         self,
         surface_rect: pg.Rect,
-        *,
-        previous_state: type[State] | None = None,
-        payload: dict[str, Any] | None = None,
+        transition_data: TransitionData,
     ) -> None:
         """Called when this state becomes the active state."""
-        self.persist = payload or {}
-        self.previous_state = previous_state
+        self.transition_data = transition_data
         self.start_time = pg.time.get_ticks() / 1000.0
 
-    def exit(self) -> dict[str, Any]:
+    def exit(self) -> TransitionData:
         """Called before leaving this state."""
         self.done = False
-        return self.persist
+        return self.transition_data
 
     @abstractmethod
     def handle_event(self, event: pg.Event) -> None:
@@ -134,17 +138,23 @@ class StateManager:
         self.show_fps: bool = True  # Display the framerate in the caption.
         self.keys = pg.key.get_pressed()  # Current state of all keyboard buttons.
 
-        self.current_state.enter(self.screen.get_rect())
+        self.current_state.enter(self.screen.get_rect(), TransitionData())
 
-    def change_state(self, new_state: type[State]) -> None:
-        """Exit the current state, enter the next state."""
-        previous_state = type(self.current_state)
+    def change_state(self) -> None:
+        """Exit the current state, enter the next one."""
         transition_data = self.current_state.exit()
-        self.current_state = self.states[new_state]
+        next_state = transition_data.next_state
+        if not next_state:
+            raise ValueError("Attempted to change state but next_state not set.")
+
+        # Reset next_state to ensure it's explicitly set.
+        transition_data.previous_state = type(self.current_state)
+        transition_data.next_state = None
+
+        self.current_state = self.states[next_state]
         self.current_state.enter(
             self.screen.get_rect(),
-            previous_state=previous_state,
-            payload=transition_data,
+            transition_data=transition_data,
         )
 
     def toggle_show_fps(self) -> None:
@@ -181,9 +191,7 @@ class StateManager:
             return
 
         if self.current_state.done:
-            if (next := self.current_state.next_state) is None:
-                raise ValueError("State marked done but next_state not set.")
-            self.change_state(next)
+            self.change_state()
 
         self.current_state.update(self.screen.get_rect(), self.keys, dt)
         self.current_state.draw(self.screen, dt)
