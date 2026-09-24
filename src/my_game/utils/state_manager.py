@@ -83,7 +83,7 @@ class StateManager:
         elif self.state.done:
             self.change_state()
         self.state.update(self.screen.get_rect(), self.keys, dt)
-        self.state.draw(self.screen, self.keys, dt)
+        self.state.draw(self.screen, dt)
 
     def change_state(self):
         """Cleanup the current state, switch to and startup the next state."""
@@ -190,11 +190,10 @@ class State(ABC):
         pass
 
     @abstractmethod
-    def draw(self, surface: pg.Surface, keys, dt: float):
-        """Update function for state. Must be overloaded in children.
+    def draw(self, surface: pg.Surface, dt: float):
+        """Render to the given surface. Runs every frame.
 
         surface: The surface to draw to.
-        keys: The current state of all keyboard buttons.
         current_time: Current time in seconds since program launched.
         dt: Time in seconds since last frame.
         """

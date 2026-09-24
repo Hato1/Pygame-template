@@ -153,7 +153,7 @@ class Scoreboard(State):
         )
         surface.blit(prompt_surf, prompt_rect)
 
-    def draw(self, surface, keys, dt):
+    def draw(self, surface, dt):
         surface.fill(pg.Color("black"))
         top_y = self.draw_title(surface)
         self.draw_scores(surface, top_y)

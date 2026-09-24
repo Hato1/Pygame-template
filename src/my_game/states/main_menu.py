@@ -20,5 +20,5 @@ class MainMenu(State):
     def update(self, surface_rect, keys, dt):
         pass
 
-    def draw(self, surface, keys, dt):
+    def draw(self, surface, dt):
         surface.fill(pg.Color("blue"))

@@ -223,7 +223,7 @@ class Game(State):
         # Score is time survived in seconds.
         self.score = (pg.time.get_ticks() / 1000.0) - self.start_time
 
-    def draw(self, surface: pg.Surface, keys, dt: float):
+    def draw(self, surface: pg.Surface, dt: float):
         surface.fill(pg.Color("gray"))
         for monster in self.monsters:
             monster.draw(surface, pg.time.get_ticks() / 1000.0)
