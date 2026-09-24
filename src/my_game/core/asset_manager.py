@@ -8,7 +8,7 @@ Each Enum member has a method to load the asset.
 Enums were chosen to avoid hardcoding strings throughout the codebase.
 
 Usage:
-    from my_game.utils.asset_manager import Images
+    from my_game.core.asset_manager import Images
     image = Images.ZOMBIE.load()  # Returns pygame surface.
 """
 

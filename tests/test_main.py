@@ -23,7 +23,7 @@ def test_state_transition_uses_explicit_enter_exit_and_payload() -> None:
     """State transitions should pass payloads through an explicit lifecycle."""
     import pygame as pg
 
-    from my_game.utils.state_manager import State, StateManager
+    from my_game.core.state_manager import State, StateManager
 
     class Alpha(State):
         def handle_event(self, event: pg.event.Event) -> None:

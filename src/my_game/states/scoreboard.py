@@ -4,9 +4,9 @@ from typing import Any, NamedTuple
 
 import pygame as pg
 
+from my_game.core.asset_manager import Fonts
+from my_game.core.state_manager import State
 from my_game.states import main_menu
-from my_game.utils.asset_manager import Fonts
-from my_game.utils.state_manager import State
 
 
 class SubState(Enum):

@@ -4,10 +4,10 @@ import pygame as pg
 
 import my_game.initialise_pygame  # noqa: F401
 from my_game.constants import DEFAULT_CAPTION, SCREEN_SIZE
+from my_game.core.state_manager import State, StateManager
 from my_game.states.game import Game
 from my_game.states.main_menu import MainMenu
 from my_game.states.scoreboard import Scoreboard
-from my_game.utils.state_manager import State, StateManager
 
 
 def main():
