@@ -137,8 +137,15 @@ class Game(State):
         self.player: Player
         self.score: float = 0.0
 
-    def startup(self, current_time: float, persistant: dict[str, Any], previous: type[State], surface_rect: pg.Rect):
-        super().startup(current_time, persistant, previous, surface_rect)
+    def enter(
+        self,
+        surface_rect: pg.Rect,
+        *,
+        current_time: float,
+        payload: dict[str, Any] | None = None,
+        previous_state: type[State] | None = None,
+    ):
+        super().enter(surface_rect, current_time=current_time, payload=payload, previous_state=previous_state)
         self.monster_meter = 0
         self.monster_interval = self.DEFAULT_MONSTER_INTERVAL
         self.monsters = []
@@ -152,7 +159,7 @@ class Game(State):
                 # assign the class object from the module alias to avoid
                 # circular-import issues that arise from `from ... import ...`
                 # and to keep the reference short.
-                self.next = scoreboard.Scoreboard
+                self.next_state = scoreboard.Scoreboard
 
     def draw_healthbar(self, surface):
         """Draws the player's health as hearts in the top-left corner."""
@@ -210,7 +217,7 @@ class Game(State):
 
         if self.player.health <= 0:
             self.done = True
-            self.next = scoreboard.Scoreboard
+            self.next_state = scoreboard.Scoreboard
 
         self.update_difficulty(dt)
 
@@ -225,7 +232,7 @@ class Game(State):
         self.draw_healthbar(surface)
         self.draw_score(surface)
 
-    def cleanup(self) -> dict[str, Any]:
-        persist = super().cleanup()
+    def exit(self) -> dict[str, Any]:
+        persist = super().exit()
         persist["score"] = self.score
         return self.persist

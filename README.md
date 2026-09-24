@@ -1,6 +1,6 @@
 # 🎮 Pygame Project Template
 
-A clean, production-ready template for building structured Pygame projects with modern Python tooling.
+A template for building structured Pygame projects with modern Python tooling.
 
 ### ✨ Features:
 * 🧠 State machine architecture (Main Menu, Level1, etc.)
@@ -77,7 +77,7 @@ Use this if you need to debug or customize build settings.
 Mobile users often do not have keyboards or mice.  
 > Pygbag treats screen taps as left mouse clicks.
 
-TODO: Update this section when Pygbag > 0.9.2 is stable.
+TODO: Add this section when Pygbag > 0.9.2 is stable.
 
 ---
 

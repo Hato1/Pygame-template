@@ -15,7 +15,7 @@ class MainMenu(State):
                 # assign the class object from the module alias to avoid
                 # circular-import issues that arise from `from ... import ...`
                 # and to keep the reference short.
-                self.next = game.Game
+                self.next_state = game.Game
 
     def update(self, surface_rect, keys, current_time, dt):
         pass

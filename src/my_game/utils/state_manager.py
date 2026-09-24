@@ -89,13 +89,18 @@ class StateManager:
 
     def change_state(self):
         """Cleanup the current state, switch to and startup the next state."""
-        previous, next = type(self.state), self.state.next
-        if next is None:
+        previous_state, next_state = type(self.state), self.state.next_state
+        if next_state is None:
             raise ValueError("Next state not set")
 
-        persistant_variables = self.state.cleanup()
-        self.state = self.state_dict[next]
-        self.state.startup(self.current_time, persistant_variables, previous, self.screen.get_rect())
+        persistant_variables = self.state.exit()
+        self.state = self.state_dict[next_state]
+        self.state.enter(
+            self.screen.get_rect(),
+            current_time=self.current_time,
+            payload=persistant_variables,
+            previous_state=previous_state,
+        )
 
     def main(self):
         """Main loop for entire program."""
@@ -146,34 +151,34 @@ class State(ABC):
     """
 
     def __init__(self):
-        # Time in seconds since the State started.
-        self.start_time: float = 0.0
-        # Current time in seconds since the program launched.
-        self.current_time: float = 0.0
-        # Exit the entire program.
-        self.quit: bool = False
-        # Leave this state and go to the next one.
         self.done: bool = False
-        # Next state to go to when self.done is True.
-        self.next: type[State] | None = None
-        # The state that was active before this one.
-        self.previous: type[State] | None = None
-        # Dictionary of variables that should persist to the next state.
+        self.quit: bool = False
+        self.next_state: type[State] | None = None
         self.persist: dict[str, Any] = {}
+
+        self.previous_state: type[State] | None = None
+        self.start_time: float = 0.0
 
     @abstractmethod
     def get_event(self, event: pg.Event):
         """Processes events that were passed from the main event loop."""
         pass
 
-    def startup(self, current_time: float, persistant: dict[str, Any], previous: type[State], surface_rect: pg.Rect):
-        """Add variables passed in persistant to the proper attributes and
-        set the start time of the State to the current time."""
-        self.persist = persistant
+    def enter(
+        self,
+        surface_rect: pg.Rect,
+        *,
+        previous_state: type[State] | None = None,
+        payload: dict[str, Any] | None = None,
+        current_time: float,
+    ):
+        """Initialise state"""
+        self.persist = payload or {}
+        self.previous_state = previous_state
+        # Todo: Get from pygame.time.get_ticks() instead of passing in current_time.
         self.start_time = current_time
-        self.previous = previous
 
-    def cleanup(self) -> dict[str, Any]:
+    def exit(self) -> dict[str, Any]:
         """Add variables that should persist to the self.persist dictionary.
         Then reset State.done to False."""
         self.done = False

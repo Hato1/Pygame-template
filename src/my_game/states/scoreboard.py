@@ -44,8 +44,15 @@ class Scoreboard(State):
         self.cursor_position: int
         self.sub_state: SubState
 
-    def startup(self, current_time: float, persistant: dict[str, Any], previous: type[State], surface_rect: pg.Rect):
-        super().startup(current_time, persistant, previous, surface_rect)
+    def enter(
+        self,
+        surface_rect: pg.Rect,
+        *,
+        current_time: float,
+        payload: dict[str, Any] | None = None,
+        previous_state: type[State] | None = None,
+    ):
+        super().enter(surface_rect, current_time=current_time, payload=payload, previous_state=previous_state)
         if score := self.persist.get("score"):
             self.current_score = score
         else:
@@ -81,7 +88,7 @@ class Scoreboard(State):
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_RETURN:
                     self.done = True
-                    self.next = main_menu.MainMenu
+                    self.next_state = main_menu.MainMenu
 
         elif self.sub_state == SubState.NEW_HIGHSCORE:
             if event.type == pg.KEYDOWN:
