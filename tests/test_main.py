@@ -1,11 +1,14 @@
 """Test basic project functionality."""
 
+import pytest
+
 
 def test_game_import() -> None:
     """Check project imports successfully."""
     import my_game  # noqa: F401
 
 
+@pytest.mark.filterwarnings("ignore:no fast renderer available")
 def test_main_exists():
     """Check main function exists.
 

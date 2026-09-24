@@ -3,7 +3,7 @@ name = "my_game"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.10"
 dependencies = [
     "pygame-ce>=2.5.8",
 ]
@@ -91,6 +91,7 @@ addopts = [
 
 [tool.mypy]
 check_untyped_defs = true
+follow_untyped_imports = true
 
 [tool.pytest_env]
 SDL_VIDEODRIVER = "dummy"
