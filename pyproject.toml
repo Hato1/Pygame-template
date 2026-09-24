@@ -16,7 +16,8 @@ dev = [
     "pytest>=9.1.1", # Testing framework.
     "pytest-env>=1.7.1", # Environment variables for pytest.
     "pyinstaller>=6.22.3", # For building executables on Windows, Mac and Linux.
-    "pillow>=12.3.0",  # Required for Pyinstaller PNG icon conversion.
+    "pillow>=12.3.0", # Required for Pyinstaller PNG icon conversion.
+    "pylint>=4.0.9",
 ]
 
 [project.scripts]
@@ -92,6 +93,14 @@ addopts = [
 [tool.mypy]
 check_untyped_defs = true
 follow_untyped_imports = true
+
+[tool.pylint."messages control"]
+disable = [
+    "all"
+]
+enable = [
+    "W0201", # Attribute defined outside __init__
+]
 
 [tool.pytest_env]
 SDL_VIDEODRIVER = "dummy"

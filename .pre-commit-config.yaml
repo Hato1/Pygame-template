@@ -25,6 +25,16 @@ repos:
         language: system
         require_serial: true
         types: [python]
+    -   id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        require_serial: true
+        args: [
+          "-rn", # Only display messages
+          "-sn", # Don't display the score
+        ]
     -   id: pytest
         name: pytest
         entry: uv run pytest
