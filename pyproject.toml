@@ -14,13 +14,14 @@ dev = [
     "mypy>=1.17.1", # Static type checker (Note: Replace with Ty when released?).
     "pre-commit>=4.3.0", # See .pre-commit-config.yaml
     "ruff>=0.12.11", # Linter.
-    "pytest>=8.4.2", # Testing framework.
+    "pytest>=9.1.1", # Testing framework.
+    "pytest-env>=1.7.1", # Environment variables for pytest.
     "pyinstaller>=6.16.0", # For building executables on Windows, Mac and Linux.
     "pillow>=12.0.0",  # Required for Pyinstaller PNG icon conversion.
 ]
 
 [project.scripts]
-launch-game = "my_game.main:main"
+run-game = "my_game.main:main"
 
 # Including this to install project files into venv.
 [build-system]
@@ -39,11 +40,19 @@ extend-select = [
   "I",       # isort
   "N",       # pep8-naming
   "PIE",     # flake8-pie
+  "PLW",     # pylint warning
   "PLE",     # pylint error
-  "RUF100",  # Unused noqa comments
-  "PGH004",  # blanket noqa comments
+  "PLR",     # pylint refactor
+  "PTH",     # Use Pathlib instead of os.path
+  "PT",      # flake8-pytest-style
+  "RUF",     # ruff-specific rules
+  "PGH",     # blanket noqa and type-ignore comments
+  "FBT",     # flake8-boolean-trap
   "UP",      # pyupgrade
+  "NPY",     # NumPy-specific rules
+  "EXE",     # flake8-executable
   "C4",      # flake8-comprehensions
+  "C90",     # McCabe complexity
   "SIM101",  # merge duplicate isinstance calls
   "SIM201", "SIM202", "SIM222", "SIM223",  # flake8-simplify
   "FURB168", # Prefer is operator over isinstance for None checks
@@ -63,6 +72,7 @@ ignore = [
   "C420",   # reads a little worse. fromkeys predates dict comprehensions
   "C416",   # There are a few cases where it's nice to have names for the dict items
   "PIE790", # there's nothing wrong with pass
+  "SIM102", # Splitting a compound conditional into multiple lines is often more readable
 ]
 
 unfixable = [
@@ -70,9 +80,15 @@ unfixable = [
   "SIM223", # automatic fix might obscure issue
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PLR2004"] # Allow magic values used in comparisons for tests.
+
 [tool.pytest.ini_options]
 # importlib is best practice
 # https://docs.pytest.org/en/stable/explanation/goodpractices.html
 addopts = [
     "--import-mode=importlib",
 ]
+
+[tool.pytest_env]
+SDL_VIDEODRIVER = "dummy"

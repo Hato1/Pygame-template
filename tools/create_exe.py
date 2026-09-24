@@ -22,6 +22,7 @@ Pyinstaller Docs: https://pyinstaller.org/en/stable/usage.html
 import sys
 import tomllib
 from importlib.resources import files
+from pathlib import Path
 
 import PyInstaller.__main__ as pyinstaller  # type: ignore[import-untyped]
 
@@ -32,7 +33,7 @@ if PLATFORM.startswith("win"):
     PLATFORM = "win"
 
 # Extract program name and version from pyproject.toml
-with open("pyproject.toml", "rb") as f:
+with Path("pyproject.toml").open("rb") as f:
     pyproject = tomllib.load(f)
 
 NAME = pyproject["project"]["name"]

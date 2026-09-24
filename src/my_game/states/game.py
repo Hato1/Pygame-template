@@ -3,7 +3,7 @@ from typing import Any, Self
 
 import pygame as pg
 
-import my_game.states.scoreboard as scoreboard
+from my_game.states import scoreboard
 from my_game.utils.asset_manager import Fonts, Images, UIElements
 from my_game.utils.state_manager import State
 
@@ -165,7 +165,8 @@ class Game(State):
 
     def draw_score(self, surface: pg.Surface):
         """Draws the player's score in the top-right corner."""
-        score_surf = self.FONT.render(f"score: {self.score:.2f}", True, pg.Color("yellow"))
+        anti_alias = True
+        score_surf = self.FONT.render(f"score: {self.score:.2f}", anti_alias, pg.Color("yellow"))
         score_rect = score_surf.get_rect(topright=(surface.get_width() - self.UI_OFFSET, self.UI_OFFSET))
         surface.blit(score_surf, score_rect)
 
@@ -195,8 +196,7 @@ class Game(State):
     def update_difficulty(self, dt: float):
         """Gradually increase game difficulty over time."""
         self.monster_interval -= self.MONSTER_INTERVAL_DECREASE_RATE * dt
-        if self.monster_interval < self.MINIMUM_MONSTER_INTERVAL:
-            self.monster_interval = self.MINIMUM_MONSTER_INTERVAL
+        self.monster_interval = max(self.monster_interval, self.MINIMUM_MONSTER_INTERVAL)
 
     def update(self, surface_rect, keys, current_time, dt):
         self.update_monster_spawner(surface_rect, dt)

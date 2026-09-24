@@ -4,7 +4,7 @@ from typing import Any, NamedTuple
 
 import pygame as pg
 
-import my_game.states.main_menu as main_menu
+from my_game.states import main_menu
 from my_game.utils.asset_manager import Fonts
 from my_game.utils.state_manager import State
 
@@ -101,19 +101,21 @@ class Scoreboard(State):
         pass
 
     def draw_title(self, surface: pg.Surface):
-        title_surf = self.BIGFONT.render("high scores", True, pg.Color("white"))
+        anti_alias = True
+        title_surf = self.BIGFONT.render("high scores", anti_alias, pg.Color("white"))
         title_rect = title_surf.get_rect(midtop=(surface.get_rect().centerx, self.UI_OFFSET))
         surface.blit(title_surf, title_rect)
         return title_rect.bottom + self.UI_OFFSET
 
-    def draw_score(self, surface: pg.Surface, top_y: int, entry: ScoreEntry, position: int, highlight: bool = False):
+    def draw_score(self, surface: pg.Surface, top_y: int, entry: ScoreEntry, position: int, *, highlight: bool = False):
         blink_frequency = 500  # milliseconds
         blink_duration = 25  # milliseconds
         if highlight and pg.time.get_ticks() % blink_frequency < blink_duration:
             return  # Skip drawing to create blink effect.
 
         color = pg.Color("yellow") if highlight else pg.Color("white")
-        entry_surf = self.FONT.render(f"{position + 1}. {entry.name} - {entry.score:.2f}", True, color)
+        anti_alias = True
+        entry_surf = self.FONT.render(f"{position + 1}. {entry.name} - {entry.score:.2f}", anti_alias, color)
         x = surface.get_rect().centerx
         y = top_y + position * (self.FONT.get_height() + self.UI_OFFSET)
         entry_rect = entry_surf.get_rect(midtop=(x, y))
@@ -138,8 +140,8 @@ class Scoreboard(State):
                 prompt = "new highscore! enter name"
             case _:
                 raise ValueError(f"Unhandled sub-state: {self.sub_state}")
-
-        prompt_surf = self.FONT.render(prompt, True, pg.Color("yellow"))
+        anti_alias = True
+        prompt_surf = self.FONT.render(prompt, anti_alias, pg.Color("yellow"))
         prompt_rect = prompt_surf.get_rect(
             midbottom=(surface.get_rect().centerx, surface.get_height() - self.UI_OFFSET)
         )

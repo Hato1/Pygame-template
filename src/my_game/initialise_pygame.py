@@ -1,7 +1,7 @@
 import pygame as pg
 
 # TODO: Move to a new game config file.
-SCREEN_SIZE = (128, 128)
+from my_game.constants import SCREEN_SIZE
 
 pg.init()
 # Start hidden so assets can be loaded before the window is shown.

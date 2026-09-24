@@ -1,6 +1,6 @@
 import pygame as pg
 
-import my_game.states.game as game
+from my_game.states import game
 from my_game.utils.state_manager import State
 
 
