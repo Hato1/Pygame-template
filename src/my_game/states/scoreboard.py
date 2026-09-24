@@ -103,7 +103,7 @@ class Scoreboard(State):
         else:
             raise ValueError(f"Unhandled sub-state: {self.sub_state}")
 
-    def update(self, surface_rect, keys, current_time, dt):
+    def update(self, surface_rect, keys, dt):
         pass
 
     def draw_title(self, surface: pg.Surface):
@@ -153,7 +153,7 @@ class Scoreboard(State):
         )
         surface.blit(prompt_surf, prompt_rect)
 
-    def draw(self, surface, keys, current_time, dt):
+    def draw(self, surface, keys, dt):
         surface.fill(pg.Color("black"))
         top_y = self.draw_title(surface)
         self.draw_scores(surface, top_y)

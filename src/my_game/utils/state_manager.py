@@ -46,7 +46,6 @@ class StateManager:
 
         self.quit: bool = False  # Set to True to exit program.
         self.clock: pg.Clock = pg.time.Clock()
-        self.current_time: float = 0.0  # Current time in seconds since program launched.
         self.fps: float = 60.0  # Used to limit the framerate.
         self.show_fps: bool = True  # Display the framerate in the caption.
         self.keys = pg.key.get_pressed()  # Current state of all keyboard buttons.
@@ -79,13 +78,12 @@ class StateManager:
 
         dt: Time in seconds since last frame.
         """
-        self.current_time = pg.time.get_ticks() / 1000.0
         if self.state.quit:
             self.quit = True
         elif self.state.done:
             self.change_state()
-        self.state.update(self.screen.get_rect(), self.keys, self.current_time, dt)
-        self.state.draw(self.screen, self.keys, self.current_time, dt)
+        self.state.update(self.screen.get_rect(), self.keys, dt)
+        self.state.draw(self.screen, self.keys, dt)
 
     def change_state(self):
         """Cleanup the current state, switch to and startup the next state."""
@@ -181,8 +179,8 @@ class State(ABC):
         pass
 
     @abstractmethod
-    def update(self, surface_rect: pg.Rect, keys, current_time: float, dt: float):
-        """Update function for state. Must be overloaded in children.
+    def update(self, surface_rect: pg.Rect, keys, dt: float) -> None:
+        """Update game state. Runs every frame.
 
         surface_rect: Rect representing the surface dimensions.
         keys: The current state of all keyboard buttons.
@@ -192,7 +190,7 @@ class State(ABC):
         pass
 
     @abstractmethod
-    def draw(self, surface: pg.Surface, keys, current_time: float, dt: float):
+    def draw(self, surface: pg.Surface, keys, dt: float):
         """Update function for state. Must be overloaded in children.
 
         surface: The surface to draw to.

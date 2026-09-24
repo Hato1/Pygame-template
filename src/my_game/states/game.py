@@ -204,7 +204,7 @@ class Game(State):
         self.monster_interval -= self.MONSTER_INTERVAL_DECREASE_RATE * dt
         self.monster_interval = max(self.monster_interval, self.MINIMUM_MONSTER_INTERVAL)
 
-    def update(self, surface_rect, keys, current_time, dt):
+    def update(self, surface_rect, keys, dt):
         self.update_monster_spawner(surface_rect, dt)
         self.update_player_movement(surface_rect, keys, dt)
 
@@ -223,10 +223,10 @@ class Game(State):
         # Score is time survived in seconds.
         self.score = (pg.time.get_ticks() / 1000.0) - self.start_time
 
-    def draw(self, surface: pg.Surface, keys, current_time: float, dt: float):
+    def draw(self, surface: pg.Surface, keys, dt: float):
         surface.fill(pg.Color("gray"))
         for monster in self.monsters:
-            monster.draw(surface, current_time)
+            monster.draw(surface, pg.time.get_ticks() / 1000.0)
         self.player.draw(surface)
         self.draw_healthbar(surface)
         self.draw_score(surface)
