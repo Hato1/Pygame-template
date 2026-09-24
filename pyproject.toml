@@ -20,7 +20,7 @@ dev = [
 ]
 
 [project.scripts]
-run-game = "my_game.main:main"
+launch-game = "my_game.main:main"
 
 # Including this to install project files into venv.
 [build-system]

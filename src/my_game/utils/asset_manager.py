@@ -57,15 +57,15 @@ class Sounds(Enum):
 
 @unique
 class Fonts(Enum):
-    ARIAL = "arial.ttf"
-    COMIC_SANS = "comic_sans.ttf"
+    # This monospace font looks best in lowercase at pt size multiples of 6.
+    PICO8 = "pico-8.ttf"
 
     @cache
-    def load(self) -> pg.Font:
+    def load(self, size: int = 20) -> pg.Font:
         with as_file(FONTS_PATH / self.value) as path:
             assert path.is_file(), f"Font file not found: {path}"
             # Default point size is 20; can be changed later.
-            return pg.font.Font(path)
+            return pg.font.Font(path, size)
 
 
 @unique

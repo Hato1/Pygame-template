@@ -173,7 +173,7 @@ class State(ABC):
         self.start_time = current_time
         self.previous = previous
 
-    def cleanup(self):
+    def cleanup(self) -> dict[str, Any]:
         """Add variables that should persist to the self.persist dictionary.
         Then reset State.done to False."""
         self.done = False

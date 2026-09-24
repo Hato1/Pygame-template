@@ -3,8 +3,8 @@ from typing import Any, Self
 
 import pygame as pg
 
-import my_game.states.main_menu as main_menu
-from my_game.utils.asset_manager import Images, UIElements
+import my_game.states.scoreboard as scoreboard
+from my_game.utils.asset_manager import Fonts, Images, UIElements
 from my_game.utils.state_manager import State
 
 
@@ -97,16 +97,18 @@ class Player:
         """Keep the player within the bounds of the given rect."""
         half_width = self.rect.width / 2
         half_height = self.rect.height / 2
-        self.position.x = pg.math.clamp(
-            self.position.x, surface_rect.left + half_width, surface_rect.right - half_width
-        )
-        self.position.y = pg.math.clamp(
-            self.position.y, surface_rect.top + half_height, surface_rect.bottom - half_height
-        )
+        x = pg.math.clamp(self.position.x, surface_rect.left + half_width, surface_rect.right - half_width)
+        y = pg.math.clamp(self.position.y, surface_rect.top + half_height, surface_rect.bottom - half_height)
+        # If clamping occurred, stop movement in that direction.
+        if x != self.position.x:
+            self.velocity.x = 0
+            self.position.x = x
+        if y != self.position.y:
+            self.velocity.y = 0
+            self.position.y = y
 
     def update(self, surface_rect: pg.Rect, dt: float):
         self.position += self.velocity * dt
-        print(dt)
         # Make friction dt-aware so deceleration is frame-rate independent.
         # Use exponential decay so that FRICTION represents the per-second
         # retention factor when dt is in seconds. For small dt this approximates
@@ -124,12 +126,16 @@ class Game(State):
     MONSTER_INTERVAL_DECREASE_RATE = 0.02  # Rate at which monster spawn interval decreases.
     MINIMUM_MONSTER_INTERVAL = 0.1  # Minimum seconds between monster spawns.
 
+    UI_OFFSET = 5  # Pixels from the edge of the screen to draw UI elements.
+    FONT = Fonts.PICO8.load(6)
+
     def __init__(self):
         super().__init__()
         self.monster_meter: float
         self.monster_interval: float
         self.monsters: list[Monster]
         self.player: Player
+        self.score: float = 0.0
 
     def startup(self, current_time: float, persistant: dict[str, Any], previous: type[State], surface_rect: pg.Rect):
         super().startup(current_time, persistant, previous, surface_rect)
@@ -137,6 +143,7 @@ class Game(State):
         self.monster_interval = self.DEFAULT_MONSTER_INTERVAL
         self.monsters = []
         self.player = Player(pg.Vector2(surface_rect.center))
+        self.score = 0.0
 
     def get_event(self, event: pg.Event):
         if event.type == pg.KEYDOWN:
@@ -145,7 +152,7 @@ class Game(State):
                 # assign the class object from the module alias to avoid
                 # circular-import issues that arise from `from ... import ...`
                 # and to keep the reference short.
-                self.next = main_menu.MainMenu
+                self.next = scoreboard.Scoreboard
 
     def draw_healthbar(self, surface):
         """Draws the player's health as hearts in the top-left corner."""
@@ -154,7 +161,13 @@ class Game(State):
 
         for i in range(self.player.max_health):
             heart = heart_full if i < self.player.health else empty_heart
-            surface.blit(heart, (5 + i * (heart.get_width() + 5), 5))
+            surface.blit(heart, (self.UI_OFFSET + i * (heart.get_width() + self.UI_OFFSET), self.UI_OFFSET))
+
+    def draw_score(self, surface: pg.Surface):
+        """Draws the player's score in the top-right corner."""
+        score_surf = self.FONT.render(f"score: {self.score:.2f}", True, pg.Color("yellow"))
+        score_rect = score_surf.get_rect(topright=(surface.get_width() - self.UI_OFFSET, self.UI_OFFSET))
+        surface.blit(score_surf, score_rect)
 
     def update_monster_spawner(self, surface_rect: pg.Rect, dt: float):
         """Spawns monsters over time based on the monster meter and interval."""
@@ -197,9 +210,12 @@ class Game(State):
 
         if self.player.health <= 0:
             self.done = True
-            self.next = main_menu.MainMenu
+            self.next = scoreboard.Scoreboard
 
         self.update_difficulty(dt)
+
+        # Score is time survived in seconds.
+        self.score = (pg.time.get_ticks() / 1000.0) - self.start_time
 
     def draw(self, surface: pg.Surface, keys, current_time: float, dt: float):
         surface.fill(pg.Color("gray"))
@@ -207,3 +223,9 @@ class Game(State):
             monster.draw(surface, current_time)
         self.player.draw(surface)
         self.draw_healthbar(surface)
+        self.draw_score(surface)
+
+    def cleanup(self) -> dict[str, Any]:
+        persist = super().cleanup()
+        persist["score"] = self.score
+        return self.persist

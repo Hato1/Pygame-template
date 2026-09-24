@@ -5,6 +5,7 @@ import pygame as pg
 import my_game.initialise_pygame  # noqa: F401
 from my_game.states.game import Game
 from my_game.states.main_menu import MainMenu
+from my_game.states.scoreboard import Scoreboard
 from my_game.utils.state_manager import State, StateManager
 
 ORIGINAL_CAPTION = "My Game"
@@ -21,7 +22,7 @@ def main():
     pg.display.set_caption(ORIGINAL_CAPTION)
 
     # Add states to StateManager here.
-    state_dict: dict[type[State], State] = {MainMenu: MainMenu(), Game: Game()}
+    state_dict: dict[type[State], State] = {MainMenu: MainMenu(), Game: Game(), Scoreboard: Scoreboard()}
     state_manager = StateManager(screen, state_dict, MainMenu, ORIGINAL_CAPTION)
 
     # Run main loop.
