@@ -5,10 +5,10 @@ from my_game.utils.state_manager import State
 
 
 class MainMenu(State):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-    def handle_event(self, event: pg.Event):
+    def handle_event(self, event: pg.Event) -> None:
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_RETURN:
                 self.done = True
@@ -17,8 +17,8 @@ class MainMenu(State):
                 # and to keep the reference short.
                 self.next_state = game.Game
 
-    def update(self, surface_rect, keys, dt):
+    def update(self, surface_rect: pg.Rect, keys, dt: float) -> None:
         pass
 
-    def draw(self, surface, dt):
+    def draw(self, surface: pg.Surface, dt: float) -> None:
         surface.fill(pg.Color("blue"))

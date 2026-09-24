@@ -61,7 +61,13 @@ class StateManager:
             payload=transition_data,
         )
 
-    def handle_events(self):
+    def toggle_show_fps(self):
+        """Toggle displaying the framerate in the window caption."""
+        self.show_fps = not self.show_fps
+        if not self.show_fps:
+            pg.display.set_caption(self.caption)
+
+    def handle_events(self) -> None:
         """Process all events and pass them down to current State.
 
         The f5 key globally turns on/off the display of FPS in the caption
@@ -72,17 +78,12 @@ class StateManager:
                     self.quit = True
                 case pg.KEYDOWN:
                     self.keys = pg.key.get_pressed()
-                    self.toggle_show_fps(event.key)
+                    if event.key == pg.K_F5:
+                        self.toggle_show_fps()
                 case pg.KEYUP:
                     self.keys = pg.key.get_pressed()
-            self.current_state.handle_event(event)
 
-    def toggle_show_fps(self, key):
-        """Press f5 to turn on/off displaying the framerate in the caption."""
-        if key == pg.K_F5:
-            self.show_fps = not self.show_fps
-            if not self.show_fps:
-                pg.display.set_caption(self.caption)
+            self.current_state.handle_event(event)
 
     def update(self, dt: float):
         """Checks for state change and updates the current state.
@@ -91,10 +92,13 @@ class StateManager:
         """
         if self.current_state.quit:
             self.quit = True
-        elif self.current_state.done:
+            return
+
+        if self.current_state.done:
             if (next := self.current_state.next_state) is None:
                 raise ValueError("State marked done but next_state not set.")
             self.change_state(next)
+
         self.current_state.update(self.screen.get_rect(), self.keys, dt)
         self.current_state.draw(self.screen, dt)
 
@@ -102,14 +106,14 @@ class StateManager:
         """Main loop for entire program."""
 
         while not self.quit:
-            time_delta = self.clock.tick(self.fps) / 1000.0
+            dt = self.clock.tick(self.fps) / 1000.0
             self.handle_events()
-            self.update(time_delta)
+            self.update(dt)
             pg.display.update()
+
             if self.show_fps:
                 fps = self.clock.get_fps()
-                with_fps = f"{self.caption} - {fps:.2f} FPS"
-                pg.display.set_caption(with_fps)
+                pg.display.set_caption(f"{self.caption} - {fps:.2f} FPS")
 
 
 class State(ABC):

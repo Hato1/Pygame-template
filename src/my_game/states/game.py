@@ -129,7 +129,7 @@ class Game(State):
     UI_OFFSET = 5  # Pixels from the edge of the screen to draw UI elements.
     FONT = Fonts.PICO8.load(6)
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.monster_meter: float
         self.monster_interval: float
@@ -143,7 +143,7 @@ class Game(State):
         *,
         payload: dict[str, Any] | None = None,
         previous_state: type[State] | None = None,
-    ):
+    ) -> None:
         super().enter(surface_rect, payload=payload, previous_state=previous_state)
         self.monster_meter = 0
         self.monster_interval = self.DEFAULT_MONSTER_INTERVAL
@@ -151,7 +151,7 @@ class Game(State):
         self.player = Player(pg.Vector2(surface_rect.center))
         self.score = 0.0
 
-    def handle_event(self, event: pg.Event):
+    def handle_event(self, event: pg.Event) -> None:
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_RETURN:
                 self.done = True
@@ -160,7 +160,7 @@ class Game(State):
                 # and to keep the reference short.
                 self.next_state = scoreboard.Scoreboard
 
-    def draw_healthbar(self, surface):
+    def draw_healthbar(self, surface) -> None:
         """Draws the player's health as hearts in the top-left corner."""
         heart_full = UIElements.HEART_FULL.load()
         empty_heart = UIElements.HEART_EMPTY.load()
@@ -169,14 +169,14 @@ class Game(State):
             heart = heart_full if i < self.player.health else empty_heart
             surface.blit(heart, (self.UI_OFFSET + i * (heart.get_width() + self.UI_OFFSET), self.UI_OFFSET))
 
-    def draw_score(self, surface: pg.Surface):
+    def draw_score(self, surface: pg.Surface) -> None:
         """Draws the player's score in the top-right corner."""
         anti_alias = True
         score_surf = self.FONT.render(f"score: {self.score:.2f}", anti_alias, pg.Color("yellow"))
         score_rect = score_surf.get_rect(topright=(surface.get_width() - self.UI_OFFSET, self.UI_OFFSET))
         surface.blit(score_surf, score_rect)
 
-    def update_monster_spawner(self, surface_rect: pg.Rect, dt: float):
+    def update_monster_spawner(self, surface_rect: pg.Rect, dt: float) -> None:
         """Spawns monsters over time based on the monster meter and interval."""
         self.monster_meter += dt
         while self.monster_meter > self.monster_interval:
@@ -184,7 +184,7 @@ class Game(State):
             self.monsters.append(new_monster)
             self.monster_meter -= self.monster_interval
 
-    def update_player_movement(self, surface_rect: pg.Rect, keys, dt: float):
+    def update_player_movement(self, surface_rect: pg.Rect, keys, dt: float) -> None:
         """Update player position based on input keys."""
         movement = pg.Vector2(0, 0)
         if keys[pg.K_w] or keys[pg.K_UP]:
@@ -199,12 +199,12 @@ class Game(State):
         self.player.increase_velocity(movement)
         self.player.update(surface_rect, dt)
 
-    def update_difficulty(self, dt: float):
+    def update_difficulty(self, dt: float) -> None:
         """Gradually increase game difficulty over time."""
         self.monster_interval -= self.MONSTER_INTERVAL_DECREASE_RATE * dt
         self.monster_interval = max(self.monster_interval, self.MINIMUM_MONSTER_INTERVAL)
 
-    def update(self, surface_rect, keys, dt):
+    def update(self, surface_rect: pg.Rect, keys, dt: float) -> None:
         self.update_monster_spawner(surface_rect, dt)
         self.update_player_movement(surface_rect, keys, dt)
 
@@ -223,7 +223,7 @@ class Game(State):
         # Score is time survived in seconds.
         self.score = (pg.time.get_ticks() / 1000.0) - self.start_time
 
-    def draw(self, surface: pg.Surface, dt: float):
+    def draw(self, surface: pg.Surface, dt: float) -> None:
         surface.fill(pg.Color("gray"))
         for monster in self.monsters:
             monster.draw(surface, pg.time.get_ticks() / 1000.0)
