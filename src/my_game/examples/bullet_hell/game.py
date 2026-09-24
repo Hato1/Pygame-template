@@ -5,7 +5,7 @@ import pygame as pg
 
 from my_game.core.asset_manager import Fonts, Images, UIElements
 from my_game.core.state_manager import State
-from my_game.states import scoreboard
+from my_game.examples.bullet_hell import scoreboard
 
 
 def get_random_position_on_rect_perimeter(rect: pg.Rect) -> pg.Vector2:

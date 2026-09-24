@@ -1,7 +1,7 @@
 import pygame as pg
 
 from my_game.core.state_manager import State
-from my_game.states import game
+from my_game.examples.bullet_hell import game
 
 
 class MainMenu(State):
