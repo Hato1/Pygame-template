@@ -3,21 +3,20 @@ name = "my_game"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-# TODO: Consider restricting python subversion with "==3.12.*"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = [
-    "pygame-ce>=2.5.6",
+    "pygame-ce>=2.5.8",
 ]
 
 [dependency-groups]
 dev = [
-    "mypy>=1.17.1", # Static type checker (Note: Replace with Ty when released?).
-    "pre-commit>=4.3.0", # See .pre-commit-config.yaml
-    "ruff>=0.12.11", # Linter.
+    "mypy>=2.3.1", # Static type checker (Note: Replace with Ty when released?).
+    "pre-commit>=4.6.2", # See .pre-commit-config.yaml
+    "ruff>=0.16.8", # Linter.
     "pytest>=9.1.1", # Testing framework.
     "pytest-env>=1.7.1", # Environment variables for pytest.
-    "pyinstaller>=6.16.0", # For building executables on Windows, Mac and Linux.
-    "pillow>=12.0.0",  # Required for Pyinstaller PNG icon conversion.
+    "pyinstaller>=6.22.3", # For building executables on Windows, Mac and Linux.
+    "pillow>=12.3.0",  # Required for Pyinstaller PNG icon conversion.
 ]
 
 [project.scripts]
@@ -89,6 +88,9 @@ unfixable = [
 addopts = [
     "--import-mode=importlib",
 ]
+
+[tool.mypy]
+check_untyped_defs = true
 
 [tool.pytest_env]
 SDL_VIDEODRIVER = "dummy"
