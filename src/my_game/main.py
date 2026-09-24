@@ -5,9 +5,7 @@ import pygame as pg
 import my_game.initialise_pygame  # noqa: F401
 from my_game.constants import DEFAULT_CAPTION, SCREEN_SIZE
 from my_game.core.state_manager import State, StateManager
-from my_game.examples.bullet_hell.game import Game
-from my_game.examples.bullet_hell.main_menu import MainMenu
-from my_game.examples.bullet_hell.scoreboard import Scoreboard
+from my_game.examples import bullet_hell
 
 
 def main():
@@ -20,8 +18,8 @@ def main():
     pg.display.set_caption(DEFAULT_CAPTION)
 
     # Add states to StateManager here.
-    state_dict: dict[type[State], State] = {MainMenu: MainMenu(), Game: Game(), Scoreboard: Scoreboard()}
-    state_manager = StateManager(screen, state_dict, MainMenu, DEFAULT_CAPTION)
+    state_dict: dict[type[State], State] = bullet_hell.STATE_DICT
+    state_manager = StateManager(screen, state_dict, bullet_hell.INITIAL_STATE, DEFAULT_CAPTION)
 
     # Run main loop.
     state_manager.main()
