@@ -50,11 +50,9 @@ class Scoreboard(State):
         transition_data: TransitionData,
     ):
         super().enter(surface_rect, transition_data=transition_data)
-        if score := self.transition_data.persist.get("score"):
-            self.current_score = score
-        else:
+        self.current_score = transition_data.score
+        if self.current_score == 0.0:
             print("No score found in persistent data; defaulting to 0.")
-            self.current_score = 0.0
 
         # Determine if this is a new high score.
         if any(self.current_score > entry.score for entry in self.scores):
@@ -85,7 +83,7 @@ class Scoreboard(State):
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_RETURN:
                     self.done = True
-                    self.transition_data.next_state = main_menu.MainMenu
+                    self.next_state = main_menu.MainMenu
 
         elif self.sub_state == SubState.NEW_HIGHSCORE:
             if event.type == pg.KEYDOWN:

@@ -1,16 +1,14 @@
 """This module contains the StateManager class and a abstract State class.
 
-TODO: Fix state specifier.
 TODO: Fix key manager to capture both keypress instances and key holds.
       Use pygame.key.get_pressed() for key holds and key.get_just_pressed
       and key.get_just_released alongside event.pump for instantaneous.
       Actually don't because this will miss non keyboard events.
-TODO: Store state dict in states/__init__.py and import here.
+TODO: Remove next state from TransitionData.
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass
 
 import pygame as pg
 
@@ -19,9 +17,10 @@ import pygame as pg
 class TransitionData:
     """Data to be passed between states during a transition."""
 
-    persist: dict[str, Any] = field(default_factory=dict)
     previous_state: type[State] | None = None
-    next_state: type[State] | None = None
+
+    # Used to pass the player's score from the game state to the scoreboard state.
+    score: float = 0.0
 
 
 class State(ABC):
@@ -60,6 +59,7 @@ class State(ABC):
     def __init__(self):
         self.done: bool = False
         self.quit: bool = False
+        self.next_state: type[State] | None = None
         self.transition_data: TransitionData = TransitionData()
         self.start_time: float = 0.0
 
@@ -69,12 +69,12 @@ class State(ABC):
         transition_data: TransitionData,
     ) -> None:
         """Called when this state becomes the active state."""
-        self.transition_data = transition_data
         self.start_time = pg.time.get_ticks() / 1000.0
 
     def exit(self) -> TransitionData:
         """Called before leaving this state."""
         self.done = False
+        self.transition_data.previous_state = type(self)
         return self.transition_data
 
     @abstractmethod
@@ -140,16 +140,11 @@ class StateManager:
 
         self.current_state.enter(self.screen.get_rect(), TransitionData())
 
-    def change_state(self) -> None:
+    def change_state(self, next_state: type[State] | None) -> None:
         """Exit the current state, enter the next one."""
         transition_data = self.current_state.exit()
-        next_state = transition_data.next_state
         if not next_state:
             raise ValueError("Attempted to change state but next_state not set.")
-
-        # Reset next_state to ensure it's explicitly set.
-        transition_data.previous_state = type(self.current_state)
-        transition_data.next_state = None
 
         self.current_state = self.states[next_state]
         self.current_state.enter(
@@ -191,7 +186,7 @@ class StateManager:
             return
 
         if self.current_state.done:
-            self.change_state()
+            self.change_state(self.current_state.next_state)
 
         self.current_state.update(self.screen.get_rect(), self.keys, dt)
         self.current_state.draw(self.screen, dt)

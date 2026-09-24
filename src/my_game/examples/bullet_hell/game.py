@@ -156,7 +156,7 @@ class Game(State):
                 # assign the class object from the module alias to avoid
                 # circular-import issues that arise from `from ... import ...`
                 # and to keep the reference short.
-                self.transition_data.next_state = scoreboard.Scoreboard
+                self.next_state = scoreboard.Scoreboard
 
     def draw_healthbar(self, surface) -> None:
         """Draws the player's health as hearts in the top-left corner."""
@@ -214,7 +214,7 @@ class Game(State):
 
         if self.player.health <= 0:
             self.done = True
-            self.transition_data.next_state = scoreboard.Scoreboard
+            self.next_state = scoreboard.Scoreboard
 
         self.update_difficulty(dt)
 
@@ -230,5 +230,6 @@ class Game(State):
         self.draw_score(surface)
 
     def exit(self) -> TransitionData:
+        self.transition_data.score = self.score
         transition_data = super().exit()
         return transition_data

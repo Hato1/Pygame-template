@@ -2,6 +2,8 @@
 
 import pytest
 
+from my_game.core.state_manager import TransitionData
+
 
 def test_game_import() -> None:
     """Check project imports successfully."""
@@ -45,17 +47,19 @@ def test_state_transition_uses_explicit_enter_exit_and_payload() -> None:
         def draw(self, surface: pg.Surface, dt: float) -> None:
             pass
 
+        def enter(self, surface_rect: pg.Rect, transition_data: TransitionData) -> None:
+            super().enter(surface_rect, transition_data)
+            assert transition_data.previous_state is Alpha
+            assert transition_data.score == 42
+
     screen = pg.display.set_mode((64, 64))
     states = {Alpha: Alpha(), Beta: Beta()}
     manager = StateManager(screen, states, Alpha, "Transition test")
 
     alpha = manager.current_state
     alpha.done = True
-    alpha.transition_data.next_state = Beta
-    alpha.transition_data.persist["score"] = 42
+    alpha.transition_data.score = 42
 
-    manager.change_state()
+    manager.change_state(Beta)
 
     assert manager.current_state is states[Beta]
-    assert manager.current_state.transition_data.persist == {"score": 42}
-    assert manager.current_state.transition_data.previous_state is Alpha
