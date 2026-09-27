@@ -13,6 +13,8 @@ from dataclasses import dataclass
 
 import pygame as pg
 
+from my_game.core.input_manager import InputManager
+
 
 # TODO: End users should be able to define their own TransitionData class
 # and pass it to the StateManager. They shouldn't have to extend the StateManager here.
@@ -128,12 +130,20 @@ class StateManager:
             Runs the main loop, handling events, updating states, rendering, and updating the window caption.
     """
 
-    def __init__(self, screen: pg.Surface, states: dict[type[State], State], starting_state: type[State], caption: str):
+    def __init__(
+        self,
+        screen: pg.Surface,
+        states: dict[type[State], State],
+        starting_state: type[State],
+        input_manager: InputManager,
+        caption: str,
+    ):
         """Initialize the StateManager with a dictionary of states and the starting state."""
 
         self.screen: pg.Surface = screen
         self.states: dict[type[State], State] = states
         self.current_state: State = self.states[starting_state]
+        self.input_manager: InputManager = input_manager
         self.caption: str = caption  # Caption for the window.
 
         self.quit: bool = False  # Set to True to exit program.

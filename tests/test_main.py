@@ -1,7 +1,10 @@
 """Test basic project functionality."""
 
+from enum import Enum
+
 import pytest
 
+from my_game.core.input_manager import InputManager
 from my_game.core.state_manager import TransitionData
 
 
@@ -54,7 +57,7 @@ def test_state_transition_uses_explicit_enter_exit_and_payload() -> None:
 
     screen = pg.display.set_mode((64, 64))
     states = {Alpha: Alpha(), Beta: Beta()}
-    manager = StateManager(screen, states, Alpha, "Transition test")
+    manager = StateManager(screen, states, Alpha, InputManager(Enum), "Transition test")
 
     alpha = manager.current_state
     alpha.done = True

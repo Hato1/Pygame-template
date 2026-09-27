@@ -19,7 +19,9 @@ def main():
 
     # Add states to StateManager here.
     state_dict: dict[type[State], State] = bullet_hell.STATE_DICT
-    state_manager = StateManager(screen, state_dict, bullet_hell.INITIAL_STATE, DEFAULT_CAPTION)
+    state_manager = StateManager(
+        screen, state_dict, bullet_hell.INITIAL_STATE, bullet_hell.input_manager, DEFAULT_CAPTION
+    )
 
     # Run main loop.
     state_manager.main()
