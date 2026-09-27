@@ -1,8 +1,12 @@
+from enum import Enum
+from typing import Any
+
 import pygame as pg
 
 from my_game.core.asset_manager import Fonts
 from my_game.core.state_manager import State
 from my_game.examples.bullet_hell import game
+from my_game.examples.bullet_hell.inputs import InputAction
 
 
 class MainMenu(State):
@@ -11,13 +15,12 @@ class MainMenu(State):
     def __init__(self) -> None:
         super().__init__()
 
-    def handle_event(self, event: pg.Event) -> None:
-        if event.type == pg.KEYDOWN:
-            if event.key in [pg.K_RETURN, pg.K_SPACE]:
-                self.done = True
-                self.next_state = game.Game
+    def handle_event(self, actions: set[Enum], data: dict[str, Any]) -> None:
+        if InputAction.UI_SELECT in actions:
+            self.done = True
+            self.next_state = game.Game
 
-    def update(self, surface_rect: pg.Rect, keys: tuple, dt: float) -> None:
+    def update(self, surface_rect: pg.Rect, dt: float) -> None:
         pass
 
     def draw(self, surface: pg.Surface, dt: float) -> None:
