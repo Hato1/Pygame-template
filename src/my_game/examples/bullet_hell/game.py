@@ -7,7 +7,7 @@ import pygame as pg
 from my_game.core.asset_manager import Fonts, Images, UIElements
 from my_game.core.state_manager import State, TransitionData
 from my_game.examples.bullet_hell import scoreboard
-from my_game.examples.bullet_hell.inputs import InputAction
+from my_game.examples.bullet_hell.inputs import Action
 
 
 def get_random_position_on_rect_perimeter(rect: pg.Rect) -> pg.Vector2:
@@ -152,7 +152,7 @@ class Game(State):
         self.score = 0.0
 
     def handle_event(self, actions: set[Enum], data: dict[str, Any]) -> None:
-        if InputAction.UI_SELECT in actions:
+        if Action.UI_SELECT in actions:
             self.done = True
             # assign the class object from the module alias to avoid
             # circular-import issues that arise from `from ... import ...`

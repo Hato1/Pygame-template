@@ -7,7 +7,7 @@ import pygame as pg
 from my_game.core.asset_manager import Fonts
 from my_game.core.state_manager import State, TransitionData
 from my_game.examples.bullet_hell import main_menu
-from my_game.examples.bullet_hell.inputs import InputAction
+from my_game.examples.bullet_hell.inputs import Action
 
 
 class SubState(Enum):
@@ -93,20 +93,20 @@ class Scoreboard(State):
 
     def handle_event(self, actions: set[Enum], data: dict[str, Any]) -> None:
         if self.sub_state == SubState.VIEWING:
-            if InputAction.UI_SELECT in actions:
+            if Action.UI_SELECT in actions:
                 self.done = True
                 self.next_state = main_menu.MainMenu
 
         elif self.sub_state == SubState.NEW_HIGHSCORE:
-            if InputAction.LEFT in actions:
+            if Action.LEFT in actions:
                 self.advance_cursor(-1)
-            if InputAction.RIGHT in actions:
+            if Action.RIGHT in actions:
                 self.advance_cursor(1)
-            if InputAction.DOWN in actions:
+            if Action.DOWN in actions:
                 self.change_character(1)
-            if InputAction.UP in actions:
+            if Action.UP in actions:
                 self.change_character(-1)
-            if InputAction.UI_SELECT in actions:
+            if Action.UI_SELECT in actions:
                 self.enter_score()
 
         else:

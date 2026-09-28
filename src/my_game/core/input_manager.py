@@ -24,7 +24,7 @@ class InputType(StrEnum):
 class InputEvent(NamedTuple):
     """_summary_
 
-    value (Any): The key, button, or axis value to map the action to.
+    value (Any): A key, button, or axis id (see pygame-ce key constants).
     input_type (str): The kind of input, such as keyboard or controller_button.
     keyup (bool): Bind to keyup instead of keydown.
 
@@ -37,31 +37,24 @@ class InputEvent(NamedTuple):
     keyup: bool = False
 
     @classmethod
-    def for_keyboard(cls, value: Any, *, keyup: bool = False):
+    def keyboard(cls, value: Any, *, keyup: bool = False):
         return cls(value, InputType.KEYBOARD, keyup)
 
     @classmethod
-    def for_mouse_button(cls, value: Any, *, keyup: bool = False):
+    def mouse_button(cls, value: Any, *, keyup: bool = False):
         return cls(value, InputType.MOUSE_BUTTON, keyup)
 
     @classmethod
-    def for_mouse_motion(cls, value: Any):
+    def mouse_motion(cls, value: Any):
         return cls(value, InputType.MOUSE_MOTION, keyup=False)
 
     @classmethod
-    def for_controller_button(cls, value: Any, *, keyup: bool = False):
+    def controller_button(cls, value: Any, *, keyup: bool = False):
         return cls(value, InputType.CONTROLLER_BUTTON, keyup)
 
     @classmethod
-    def for_controller_axis(cls, value: Any):
+    def controller_axis(cls, value: Any):
         return cls(value, InputType.CONTROLLER_AXIS, keyup=False)
-
-
-KeyboardBinding = InputEvent.for_keyboard
-MouseBinding = InputEvent.for_mouse_button
-MouseMotionBinding = InputEvent.for_mouse_motion
-ControllerButtonBinding = InputEvent.for_controller_button
-ControllerAxisBinding = InputEvent.for_controller_axis
 
 
 def is_keyup(event: pg.Event):
@@ -71,15 +64,23 @@ def is_keyup(event: pg.Event):
 class InputManager:
     """Maps actions to Pygame inputs.
 
+    Attributes:
+        bindings (defaultdict[InputEvent, set[Enum]]): Maps input events to sets of actions.
+
     TODO: Add support for held keys.
     TODO: Add support for unbinding keys.
     TODO: Add support to bind positive and negative actions to joystick axes.
     """
 
     def __init__(self, actions: type[Enum]) -> None:
-        self._input_to_action: defaultdict[InputEvent, set[Enum]] = defaultdict(set)
+        """Initialize the InputManager with a set of actions.
 
-    def map_action_to_key(
+        Args:
+            actions (type[Enum]): The enumeration of possible actions that can be bound to inputs.
+        """
+        self.bindings: defaultdict[InputEvent, set[Enum]] = defaultdict(set)
+
+    def map_input_to_action(
         self,
         action: Enum,
         input_event: InputEvent,
@@ -90,7 +91,7 @@ class InputManager:
             action (Enum): The action to bind.
             input_event: The users input.
         """
-        self._input_to_action[input_event].add(action)
+        self.bindings[input_event].add(action)
 
     def get_bound_actions(
         self,
@@ -101,7 +102,7 @@ class InputManager:
         Returns:
             set[Enum]: Associated actions.
         """
-        return self._input_to_action.get(input_event, set())
+        return self.bindings.get(input_event, set())
 
     def get_bound_actions_for_pygame_event(self, event: pg.Event) -> tuple[set[Enum], dict[str, Any]]:
         """Returns the Actions corresponding to the given Pygame event.
@@ -131,17 +132,17 @@ class InputManager:
     @staticmethod
     def _normalize_keyboard_event(event: pg.Event) -> tuple[InputEvent, dict[str, Any]]:
         data = {"input": event.key}
-        return KeyboardBinding(event.key, keyup=is_keyup(event)), data
+        return InputEvent.keyboard(event.key, keyup=is_keyup(event)), data
 
     @staticmethod
     def _normalize_mouse_event(event: pg.Event) -> tuple[InputEvent, dict[str, Any]]:
         match event.type:
             case pg.MOUSEMOTION:
                 data = {"input": "mouse_motion", "pos": event.pos, "rel": event.rel, "buttons": event.buttons}
-                return MouseMotionBinding(event.pos), data
+                return InputEvent.mouse_motion(event.pos), data
             case pg.MOUSEBUTTONDOWN | pg.MOUSEBUTTONUP:
                 data = {"input": event.button, "pos": event.pos}
-                return MouseBinding(event.button, keyup=is_keyup(event)), data
+                return InputEvent.mouse_button(event.button, keyup=is_keyup(event)), data
             case pg.MOUSEWHEEL:
                 raise NotImplementedError("Mouse wheel events not yet implemented.")
         raise ValueError(f"Unsupported mouse event type: {event.type}")
@@ -151,10 +152,10 @@ class InputManager:
         match event.type:
             case pg.CONTROLLERAXISMOTION:
                 data = {"input": f"joy_axis_{event.axis}", "axis": event.axis, "value": event.value}
-                return ControllerAxisBinding(event.axis), data
+                return InputEvent.controller_axis(event.axis), data
             case pg.CONTROLLERBUTTONDOWN | pg.CONTROLLERBUTTONUP:
                 data = {"input": event.button, "instance_id": event.instance_id}
-                return ControllerButtonBinding(event.button, keyup=is_keyup(event)), data
+                return InputEvent.controller_button(event.button, keyup=is_keyup(event)), data
         raise ValueError(f"Unsupported joystick event type: {event.type}")
 
     def get_binding(self, action: Enum) -> set[InputEvent]:
@@ -169,7 +170,7 @@ class InputManager:
             set[InputEvent]: Corresponding inputs.
         """
         keys = set()
-        for key, actions in self._input_to_action.items():
+        for key, actions in self.bindings.items():
             if action in actions:
                 keys.add(key)
         return keys

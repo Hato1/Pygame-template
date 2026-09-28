@@ -6,7 +6,7 @@ import pygame as pg
 from my_game.core.asset_manager import Fonts
 from my_game.core.state_manager import State
 from my_game.examples.bullet_hell import game
-from my_game.examples.bullet_hell.inputs import InputAction
+from my_game.examples.bullet_hell.inputs import Action
 
 
 class MainMenu(State):
@@ -16,7 +16,7 @@ class MainMenu(State):
         super().__init__()
 
     def handle_event(self, actions: set[Enum], data: dict[str, Any]) -> None:
-        if InputAction.UI_SELECT in actions:
+        if Action.UI_SELECT in actions:
             self.done = True
             self.next_state = game.Game
 

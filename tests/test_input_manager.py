@@ -3,11 +3,9 @@ from enum import Enum, auto
 import pygame as pg
 
 from my_game.core.input_manager import (
-    ControllerButtonBinding,
+    InputEvent,
     InputManager,
     InputType,
-    KeyboardBinding,
-    MouseBinding,
 )
 
 
@@ -19,8 +17,8 @@ class Action(Enum):
 
 def test_mouse_and_joystick_buttons_have_distinct_bindings() -> None:
     manager = InputManager(Action)
-    manager.map_action_to_key(Action.MOUSE_CLICK, MouseBinding(1))
-    manager.map_action_to_key(Action.JOYSTICK_CLICK, ControllerButtonBinding(1))
+    manager.map_input_to_action(Action.MOUSE_CLICK, InputEvent.mouse_button(1))
+    manager.map_input_to_action(Action.JOYSTICK_CLICK, InputEvent.controller_button(1))
 
     mouse_actions, _ = manager.get_bound_actions_for_pygame_event(
         pg.event.Event(pg.MOUSEBUTTONDOWN, button=1, pos=(10, 20))
@@ -36,9 +34,9 @@ def test_mouse_and_joystick_buttons_have_distinct_bindings() -> None:
 
 def test_controller_button_event_resolves_controller_binding() -> None:
     manager = InputManager(Action)
-    manager.map_action_to_key(
+    manager.map_input_to_action(
         Action.SELECT,
-        ControllerButtonBinding(pg.CONTROLLER_BUTTON_A),
+        InputEvent.controller_button(pg.CONTROLLER_BUTTON_A),
     )
 
     actions, data = manager.get_bound_actions_for_pygame_event(
@@ -51,10 +49,10 @@ def test_controller_button_event_resolves_controller_binding() -> None:
 
 def test_get_binding_returns_structured_input_identity() -> None:
     manager = InputManager(Action)
-    manager.map_action_to_key(Action.SELECT, KeyboardBinding(pg.K_RETURN))
-    manager.map_action_to_key(
+    manager.map_input_to_action(Action.SELECT, InputEvent.keyboard(pg.K_RETURN))
+    manager.map_input_to_action(
         Action.SELECT,
-        ControllerButtonBinding(pg.CONTROLLER_BUTTON_A),
+        InputEvent.controller_button(pg.CONTROLLER_BUTTON_A),
     )
 
     keyup = False
