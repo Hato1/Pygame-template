@@ -11,7 +11,6 @@ TODO: Fix key manager to capture both keypress instances and key holds.
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
 
 import pygame as pg
 
@@ -88,7 +87,7 @@ class State(ABC):
         return self.transition_data
 
     @abstractmethod
-    def handle_event(self, actions: set[Enum], data: dict[str, Any]) -> None:
+    def handle_event(self, actions: set[Enum], event: pg.Event) -> None:
         """Handle one pygame event."""
         pass
 
@@ -173,16 +172,13 @@ class StateManager:
             pg.display.set_caption(self.caption)
 
     def handle_events(self) -> None:
-        """Process all events and pass them down to current State.
-
-        The f5 key globally turns on/off the display of FPS in the caption
-        """
+        """Process all events and pass them down to current State."""
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.quit = True
             else:
-                actions, data = self.input_manager.get_bound_actions_for_pygame_event(event)
-                self.current_state.handle_event(actions, data)
+                actions = self.input_manager.get_bound_actions_for_pygame_event(event)
+                self.current_state.handle_event(actions, event)
 
     def update(self, dt: float):
         """Checks for state change and updates the current state.
