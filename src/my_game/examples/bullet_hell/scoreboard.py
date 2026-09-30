@@ -1,6 +1,6 @@
 # Highest score should be 100 seconds. I have achieved this score.
 from enum import Enum, auto
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 import pygame as pg
 
@@ -91,7 +91,7 @@ class Scoreboard(State):
         new_char = chr(ord("a") + new_index)
         self.set_char_at_cursor(new_char)
 
-    def handle_event(self, actions: set[Enum], data: dict[str, Any]) -> None:
+    def handle_event(self, actions: set[Enum], event: pg.Event) -> None:
         if self.sub_state == SubState.VIEWING:
             if Action.UI_SELECT in actions:
                 self.done = True
@@ -112,7 +112,7 @@ class Scoreboard(State):
         else:
             raise ValueError(f"Unhandled sub-state: {self.sub_state}")
 
-    def update(self, surface_rect, dt):
+    def update(self, surface_rect, dt, held_actions: set[Enum]):
         pass
 
     def draw_title(self, surface: pg.Surface):

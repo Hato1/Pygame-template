@@ -78,6 +78,7 @@ class InputManager:
             actions (type[Enum]): The enumeration of possible actions that can be bound to inputs.
         """
         self.bindings: defaultdict[InputEvent, set[Enum]] = defaultdict(set)
+        self.held_inputs: set[InputEvent] = set()
 
     def map_input_to_action(
         self,
@@ -140,6 +141,39 @@ class InputManager:
 
         actions = self.get_bound_actions(input_event)
         return actions
+
+    def process_pygame_event(self, event: pg.Event) -> set[Enum]:
+        """Update held-button state and return actions bound to this event."""
+        if event.type == pg.WINDOWFOCUSLOST:
+            self.held_inputs.clear()
+        elif event.type == pg.CONTROLLERDEVICEREMOVED:
+            self.held_inputs = {
+                input_event for input_event in self.held_inputs if input_event.input_type != InputType.CONTROLLER_BUTTON
+            }
+        elif event.type in (pg.KEYDOWN, pg.KEYUP):
+            input_event = InputEvent.keyboard(event.key)
+            self._update_held_input(input_event, keyup=is_keyup(event))
+        elif event.type in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
+            input_event = InputEvent.mouse_button(event.button)
+            self._update_held_input(input_event, keyup=is_keyup(event))
+        elif event.type in (pg.CONTROLLERBUTTONDOWN, pg.CONTROLLERBUTTONUP):
+            input_event = InputEvent.controller_button(event.button)
+            self._update_held_input(input_event, keyup=is_keyup(event))
+
+        return self.get_bound_actions_for_pygame_event(event)
+
+    def get_held_actions(self) -> set[Enum]:
+        """Return actions bound to currently held keyboard or button inputs."""
+        held_actions: set[Enum] = set()
+        for input_event in self.held_inputs:
+            held_actions.update(self.get_bound_actions(input_event))
+        return held_actions
+
+    def _update_held_input(self, input_event: InputEvent, *, keyup: bool) -> None:
+        if keyup:
+            self.held_inputs.discard(input_event)
+        else:
+            self.held_inputs.add(input_event)
 
     @staticmethod
     def _normalize_keyboard_event(event: pg.Event) -> InputEvent:

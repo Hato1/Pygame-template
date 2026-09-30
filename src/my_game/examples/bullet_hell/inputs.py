@@ -25,9 +25,13 @@ input_manager.map_input_to_action(Action.UI_SELECT, InputEvent.keyboard(pg.K_SPA
 input_manager.map_input_to_action(Action.UI_CANCEL, InputEvent.keyboard(pg.K_ESCAPE))
 input_manager.map_input_to_action(Action.TOGGLE_DEBUG, InputEvent.keyboard(pg.K_F1))
 input_manager.map_input_to_action(Action.UP, InputEvent.keyboard(pg.K_w))
+input_manager.map_input_to_action(Action.UP, InputEvent.keyboard(pg.K_UP))
 input_manager.map_input_to_action(Action.DOWN, InputEvent.keyboard(pg.K_s))
+input_manager.map_input_to_action(Action.DOWN, InputEvent.keyboard(pg.K_DOWN))
 input_manager.map_input_to_action(Action.LEFT, InputEvent.keyboard(pg.K_a))
+input_manager.map_input_to_action(Action.LEFT, InputEvent.keyboard(pg.K_LEFT))
 input_manager.map_input_to_action(Action.RIGHT, InputEvent.keyboard(pg.K_d))
+input_manager.map_input_to_action(Action.RIGHT, InputEvent.keyboard(pg.K_RIGHT))
 
 # Controller
 input_manager.map_input_to_action(Action.UI_SELECT, InputEvent.controller_button(pg.CONTROLLER_BUTTON_A))

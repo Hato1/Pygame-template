@@ -50,7 +50,7 @@ class State(ABC):
             Abstract method to process a single Pygame event.
             Must be implemented by subclasses.
 
-        update(surface_rect: pg.Rect, keys: tuple, dt: float):
+        update(surface_rect: pg.Rect, dt: float, held_actions: set[Enum]):
             Abstract method to update program logic from one frame to the next.
             Don't draw anything to any surfaces here.
             Must be implemented by subclasses.
@@ -92,11 +92,12 @@ class State(ABC):
         pass
 
     @abstractmethod
-    def update(self, surface_rect: pg.Rect, dt: float) -> None:
+    def update(self, surface_rect: pg.Rect, dt: float, held_actions: set[Enum]) -> None:
         """Update game logic. Runs every frame.
 
         surface_rect: Rect representing the surface dimensions.
         dt: Time in seconds since last frame.
+        held_actions: Actions whose bound inputs are currently held.
         """
         pass
 
@@ -177,7 +178,7 @@ class StateManager:
             if event.type == pg.QUIT:
                 self.quit = True
             else:
-                actions = self.input_manager.get_bound_actions_for_pygame_event(event)
+                actions = self.input_manager.process_pygame_event(event)
                 self.current_state.handle_event(actions, event)
 
     def update(self, dt: float):
@@ -192,7 +193,8 @@ class StateManager:
         if self.current_state.done:
             self.change_state(self.current_state.next_state)
 
-        self.current_state.update(self.screen.get_rect(), dt)
+        held_actions = self.input_manager.get_held_actions()
+        self.current_state.update(self.screen.get_rect(), dt, held_actions)
         self.current_state.draw(self.screen, dt)
 
     def main(self):

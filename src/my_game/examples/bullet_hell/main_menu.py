@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Any
 
 import pygame as pg
 
@@ -15,12 +14,12 @@ class MainMenu(State):
     def __init__(self) -> None:
         super().__init__()
 
-    def handle_event(self, actions: set[Enum], data: dict[str, Any]) -> None:
+    def handle_event(self, actions: set[Enum], event: pg.Event) -> None:
         if Action.UI_SELECT in actions:
             self.done = True
             self.next_state = game.Game
 
-    def update(self, surface_rect: pg.Rect, dt: float) -> None:
+    def update(self, surface_rect: pg.Rect, dt: float, held_actions: set[Enum]) -> None:
         pass
 
     def draw(self, surface: pg.Surface, dt: float) -> None:

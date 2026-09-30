@@ -1,6 +1,6 @@
 import random
 from enum import Enum
-from typing import Any, Self
+from typing import Self
 
 import pygame as pg
 
@@ -151,7 +151,7 @@ class Game(State):
         self.player = Player(pg.Vector2(surface_rect.center))
         self.score = 0.0
 
-    def handle_event(self, actions: set[Enum], data: dict[str, Any]) -> None:
+    def handle_event(self, actions: set[Enum], event: pg.Event) -> None:
         if Action.UI_SELECT in actions:
             self.done = True
             # assign the class object from the module alias to avoid
@@ -183,17 +183,16 @@ class Game(State):
             self.monsters.append(new_monster)
             self.monster_meter -= self.monster_interval
 
-    def update_player_movement(self, surface_rect: pg.Rect, dt: float) -> None:
+    def update_player_movement(self, surface_rect: pg.Rect, dt: float, held_actions: set[Enum]) -> None:
         """Update player position based on input keys."""
         movement = pg.Vector2(0, 0)
-        keys = pg.key.get_pressed()
-        if keys[pg.K_w] or keys[pg.K_UP]:
+        if Action.UP in held_actions:
             movement.y -= 1
-        if keys[pg.K_s] or keys[pg.K_DOWN]:
+        if Action.DOWN in held_actions:
             movement.y += 1
-        if keys[pg.K_a] or keys[pg.K_LEFT]:
+        if Action.LEFT in held_actions:
             movement.x -= 1
-        if keys[pg.K_d] or keys[pg.K_RIGHT]:
+        if Action.RIGHT in held_actions:
             movement.x += 1
         self.player.increase_velocity(movement)
         self.player.update(surface_rect, dt)
@@ -203,9 +202,9 @@ class Game(State):
         self.monster_interval -= self.MONSTER_INTERVAL_DECREASE_RATE * dt
         self.monster_interval = max(self.monster_interval, self.MINIMUM_MONSTER_INTERVAL)
 
-    def update(self, surface_rect: pg.Rect, dt: float) -> None:
+    def update(self, surface_rect: pg.Rect, dt: float, held_actions: set[Enum]) -> None:
         self.update_monster_spawner(surface_rect, dt)
-        self.update_player_movement(surface_rect, dt)
+        self.update_player_movement(surface_rect, dt, held_actions)
 
         for monster in self.monsters:
             monster.update(dt)
