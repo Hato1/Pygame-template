@@ -72,7 +72,7 @@ def test_state_manager_passes_held_actions_to_update(monkeypatch) -> None:
             pass
 
     input_manager = InputManager(Action)
-    input_manager.map_input_to_action(Action.MOVE, InputEvent.keyboard(pg.K_w))
+    input_manager.bind(Action.MOVE, InputEvent.keyboard(pg.K_w))
     state = TestState()
     screen = pg.display.set_mode((64, 64))
     manager = StateManager(screen, {TestState: state}, TestState, input_manager, "Held input test")

@@ -67,8 +67,8 @@ class InputManager:
     Attributes:
         bindings (defaultdict[InputEvent, set[Enum]]): Maps input events to sets of actions.
 
-    TODO: Add support for held keys.
-    TODO: Add support to bind positive and negative actions to joystick axes.
+    TODO: Handle controller axis motion properly, possibly with deadzone and sensitivity adjustments.
+    TODO: Handle negative and positive joystick axes separately.
     """
 
     def __init__(self, actions: type[Enum]) -> None:
@@ -80,7 +80,7 @@ class InputManager:
         self.bindings: defaultdict[InputEvent, set[Enum]] = defaultdict(set)
         self.held_inputs: set[InputEvent] = set()
 
-    def map_input_to_action(
+    def bind(
         self,
         action: Enum,
         input_event: InputEvent,
@@ -89,22 +89,22 @@ class InputManager:
 
         Args:
             action (Enum): The action to bind.
-            input_event: The users input.
+            input_event (InputEvent): The users input.
         """
         self.bindings[input_event].add(action)
 
-    def unmap_input_from_action(
+    def unbind(
         self,
-        action: Enum,
         input_event: InputEvent,
+        action: Enum,
     ) -> None:
         """Unregister binding
 
         If the action was not previously bound to the input event, this method does nothing.
 
         Args:
-            action (Enum): The action to unbind.
             input_event (InputEvent): The input event to unbind from the action.
+            action (Enum): The action to unbind.
         """
         self.bindings[input_event].discard(action)
 
@@ -119,85 +119,7 @@ class InputManager:
         """
         return self.bindings.get(input_event, set())
 
-    def get_bound_actions_for_pygame_event(self, event: pg.Event) -> set[Enum]:
-        """Returns the Actions corresponding to the given Pygame event.
-
-        Args:
-            event (pg.Event): Pygame event.
-
-        Returns:
-            set[Enum]: Bound actions.
-        """
-        if event.type == pg.QUIT:
-            raise ValueError("Quit event should not be passed to InputManager")
-        elif event.type in (pg.KEYDOWN, pg.KEYUP):
-            input_event = self._normalize_keyboard_event(event)
-        elif event.type in (pg.MOUSEMOTION, pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
-            input_event = self._normalize_mouse_event(event)
-        elif event.type in (pg.CONTROLLERAXISMOTION, pg.CONTROLLERBUTTONDOWN, pg.CONTROLLERBUTTONUP):
-            input_event = self._normalize_controller_event(event)
-        else:
-            return set()
-
-        actions = self.get_bound_actions(input_event)
-        return actions
-
-    def process_pygame_event(self, event: pg.Event) -> set[Enum]:
-        """Update held-button state and return actions bound to this event."""
-        if event.type == pg.WINDOWFOCUSLOST:
-            self.held_inputs.clear()
-        elif event.type == pg.CONTROLLERDEVICEREMOVED:
-            self.held_inputs = {
-                input_event for input_event in self.held_inputs if input_event.input_type != InputType.CONTROLLER_BUTTON
-            }
-        elif event.type in (pg.KEYDOWN, pg.KEYUP):
-            input_event = InputEvent.keyboard(event.key)
-            self._update_held_input(input_event, keyup=is_keyup(event))
-        elif event.type in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
-            input_event = InputEvent.mouse_button(event.button)
-            self._update_held_input(input_event, keyup=is_keyup(event))
-        elif event.type in (pg.CONTROLLERBUTTONDOWN, pg.CONTROLLERBUTTONUP):
-            input_event = InputEvent.controller_button(event.button)
-            self._update_held_input(input_event, keyup=is_keyup(event))
-
-        return self.get_bound_actions_for_pygame_event(event)
-
-    def get_held_actions(self) -> set[Enum]:
-        """Return actions bound to currently held keyboard or button inputs."""
-        held_actions: set[Enum] = set()
-        for input_event in self.held_inputs:
-            held_actions.update(self.get_bound_actions(input_event))
-        return held_actions
-
-    def _update_held_input(self, input_event: InputEvent, *, keyup: bool) -> None:
-        if keyup:
-            self.held_inputs.discard(input_event)
-        else:
-            self.held_inputs.add(input_event)
-
-    @staticmethod
-    def _normalize_keyboard_event(event: pg.Event) -> InputEvent:
-        return InputEvent.keyboard(event.key, keyup=is_keyup(event))
-
-    @staticmethod
-    def _normalize_mouse_event(event: pg.Event) -> InputEvent:
-        match event.type:
-            case pg.MOUSEMOTION:
-                return InputEvent.mouse_motion(event.pos)
-            case pg.MOUSEBUTTONDOWN | pg.MOUSEBUTTONUP:
-                return InputEvent.mouse_button(event.button, keyup=is_keyup(event))
-        raise ValueError(f"Unsupported mouse event type: {event.type}")
-
-    @staticmethod
-    def _normalize_controller_event(event: pg.Event) -> InputEvent:
-        match event.type:
-            case pg.CONTROLLERAXISMOTION:
-                return InputEvent.controller_axis(event.axis)
-            case pg.CONTROLLERBUTTONDOWN | pg.CONTROLLERBUTTONUP:
-                return InputEvent.controller_button(event.button, keyup=is_keyup(event))
-        raise ValueError(f"Unsupported joystick event type: {event.type}")
-
-    def get_binding(self, action: Enum) -> set[InputEvent]:
+    def get_bound_inputs(self, action: Enum) -> set[InputEvent]:
         """Returns input kind, value, and pressed/released direction for an action.
 
         This is useful for displaying mapped keys when rebinding controls.
@@ -213,3 +135,52 @@ class InputManager:
             if action in actions:
                 keys.add(key)
         return keys
+
+    def get_held_actions(self) -> set[Enum]:
+        """Return actions bound to currently held inputs."""
+        held_actions: set[Enum] = set()
+        for input_event in self.held_inputs:
+            held_actions.update(self.get_bound_actions(input_event))
+        return held_actions
+
+    def clear_held_controller_inputs(self) -> None:
+        """Clear all held controller button and axis inputs."""
+        controller_events = (InputType.CONTROLLER_BUTTON, InputType.CONTROLLER_AXIS)
+        self.held_inputs = {
+            input_event for input_event in self.held_inputs if input_event.input_type not in controller_events
+        }
+
+    def _update_held_input(self, input_event: InputEvent) -> None:
+        if input_event.keyup:
+            self.held_inputs.discard(input_event._replace(keyup=False))
+        else:
+            self.held_inputs.add(input_event)
+
+    def process_pygame_event(self, event: pg.Event) -> set[Enum]:
+        """Update held-button state and return actions bound to this event."""
+        input_event: InputEvent | None = None
+
+        match event.type:
+            case pg.QUIT:
+                raise ValueError("Quit event should not be passed to InputManager")
+            case pg.WINDOWFOCUSLOST:
+                self.held_inputs.clear()
+            case pg.CONTROLLERDEVICEREMOVED:
+                self.clear_held_controller_inputs()
+            case pg.KEYDOWN | pg.KEYUP:
+                input_event = InputEvent.keyboard(event.key, keyup=is_keyup(event))
+                self._update_held_input(input_event)
+            case pg.MOUSEBUTTONDOWN | pg.MOUSEBUTTONUP:
+                input_event = InputEvent.mouse_button(event.button, keyup=is_keyup(event))
+                self._update_held_input(input_event)
+            case pg.CONTROLLERBUTTONDOWN | pg.CONTROLLERBUTTONUP:
+                input_event = InputEvent.controller_button(event.button, keyup=is_keyup(event))
+                self._update_held_input(input_event)
+            case pg.CONTROLLERAXISMOTION:
+                input_event = InputEvent.controller_axis(event.axis)
+                self._update_held_input(input_event)
+            # Mouse motion events are not considered "held" inputs, so we don't update held_inputs.
+            case pg.MOUSEMOTION:
+                input_event = InputEvent.mouse_motion(event.pos)
+
+        return self.get_bound_actions(input_event) if input_event else set()
