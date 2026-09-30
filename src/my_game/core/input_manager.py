@@ -8,9 +8,11 @@ https://pyga.me/docs/ref/event.html
 
 from collections import defaultdict
 from enum import Enum, StrEnum
-from typing import NamedTuple
+from typing import NamedTuple, TypeVar
 
 import pygame as pg
+
+Action = TypeVar("Action", bound=Enum)
 
 
 class InputType(StrEnum):
@@ -61,34 +63,35 @@ def is_keyup(event: pg.Event):
     return event.type in [pg.KEYUP, pg.CONTROLLERBUTTONUP, pg.MOUSEBUTTONUP]
 
 
-class InputManager:
+class InputManager[Action]:
     """Maps actions to Pygame inputs.
 
     Attributes:
-        bindings (defaultdict[InputEvent, set[Enum]]): Maps input events to sets of actions.
+        bindings (defaultdict[InputEvent, set[Action]]): Maps input events to sets of actions.
+        held_inputs (set[InputEvent]): Tracks currently held input events.
 
     TODO: Handle controller axis motion properly, possibly with deadzone and sensitivity adjustments.
     TODO: Handle negative and positive joystick axes separately.
     """
 
-    def __init__(self, actions: type[Enum]) -> None:
+    def __init__(self, actions: type[Action]) -> None:
         """Initialize the InputManager with a set of actions.
 
         Args:
-            actions (type[Enum]): The enumeration of possible actions that can be bound to inputs.
+            actions (type[Action]): The Enum of possible actions that can be bound to inputs.
         """
-        self.bindings: defaultdict[InputEvent, set[Enum]] = defaultdict(set)
+        self.bindings: defaultdict[InputEvent, set[Action]] = defaultdict(set)
         self.held_inputs: set[InputEvent] = set()
 
     def bind(
         self,
-        action: Enum,
+        action: Action,
         input_event: InputEvent,
     ) -> None:
         """Register binding
 
         Args:
-            action (Enum): The action to bind.
+            action (Action): The action to bind.
             input_event (InputEvent): The users input.
         """
         self.bindings[input_event].add(action)
@@ -96,7 +99,7 @@ class InputManager:
     def unbind(
         self,
         input_event: InputEvent,
-        action: Enum,
+        action: Action,
     ) -> None:
         """Unregister binding
 
@@ -104,28 +107,28 @@ class InputManager:
 
         Args:
             input_event (InputEvent): The input event to unbind from the action.
-            action (Enum): The action to unbind.
+            action (Action): The action to unbind.
         """
         self.bindings[input_event].discard(action)
 
     def get_bound_actions(
         self,
         input_event: InputEvent,
-    ) -> set[Enum]:
+    ) -> set[Action]:
         """Returns actions associated with binding.
 
         Returns:
-            set[Enum]: Associated actions.
+            set[Action]: Associated actions.
         """
         return self.bindings.get(input_event, set())
 
-    def get_bound_inputs(self, action: Enum) -> set[InputEvent]:
+    def get_bound_inputs(self, action: Action) -> set[InputEvent]:
         """Returns input kind, value, and pressed/released direction for an action.
 
         This is useful for displaying mapped keys when rebinding controls.
 
         Args:
-            action (Enum): The action to look up.
+            action (Action): The action to look up.
 
         Returns:
             set[InputEvent]: Corresponding inputs.
@@ -136,9 +139,9 @@ class InputManager:
                 keys.add(key)
         return keys
 
-    def get_held_actions(self) -> set[Enum]:
+    def get_held_actions(self) -> set[Action]:
         """Return actions bound to currently held inputs."""
-        held_actions: set[Enum] = set()
+        held_actions: set[Action] = set()
         for input_event in self.held_inputs:
             held_actions.update(self.get_bound_actions(input_event))
         return held_actions
@@ -156,7 +159,7 @@ class InputManager:
         else:
             self.held_inputs.add(input_event)
 
-    def process_pygame_event(self, event: pg.Event) -> set[Enum]:
+    def process_pygame_event(self, event: pg.Event) -> set[Action]:
         """Update held-button state and return actions bound to this event."""
         input_event: InputEvent | None = None
 
