@@ -13,6 +13,9 @@ from typing import NamedTuple, TypeVar
 import pygame as pg
 from pygame._sdl2.controller import Controller
 
+# Absolute maximum value for a controller axis in Pygame. Joysticks range from -32767 to 32767.
+AXIS_MAX_VALUE = 32767
+
 Action = TypeVar("Action", bound=Enum)
 
 
@@ -57,8 +60,11 @@ class InputEvent(NamedTuple):
         return cls(value, InputType.CONTROLLER_BUTTON, keyup)
 
     @classmethod
-    def controller_axis(cls, value: int, *, keyup: bool = False, direction: int = 0):
-        return cls(value, InputType.CONTROLLER_AXIS, keyup=keyup, direction=direction)
+    def controller_axis(cls, value: int, *, direction: int = 1):
+        """For analogue controller joysticks and triggers."""
+        if direction not in (-1, 1):
+            raise ValueError("Direction must be either -1 or 1.")
+        return cls(value, InputType.CONTROLLER_AXIS, keyup=False, direction=direction)
 
 
 def is_keyup(event: pg.Event):
@@ -71,10 +77,13 @@ class InputManager[Action]:
     Attributes:
         bindings (defaultdict[InputEvent, set[Action]]): Maps input events to sets of actions.
         held_inputs (set[InputEvent]): Tracks currently held input events.
+        axis_values (dict[int, float]): Latest value (-1 to 1) of each controller axis.
+        controllers (dict[int, Controller]): Tracks connected controllers.
 
-    TODO: Handle controller axis motion properly, possibly with deadzone and sensitivity adjustments.
-    TODO: Handle negative and positive joystick axes separately.
+    Axes are analog: they never appear in held_inputs, use get_action_strength() to read them.
     """
+
+    AXIS_DEADZONE = 0.2
 
     def __init__(self, actions: type[Action]) -> None:
         """Initialize the InputManager with a set of actions.
@@ -86,6 +95,7 @@ class InputManager[Action]:
         """
         self.bindings: defaultdict[InputEvent, set[Action]] = defaultdict(set)
         self.held_inputs: set[InputEvent] = set()
+        self.axis_values: dict[int, float] = {}
         # Can leave this empty for now as pygame sends CONTROLLERDEVICEADDED events
         # for all connected controllers at start of program.
         self.controllers: dict[int, Controller] = {}
@@ -153,8 +163,27 @@ class InputManager[Action]:
             held_actions.update(self.get_bound_actions(input_event))
         return held_actions
 
+    def get_action_strength(self, action: Action) -> float:
+        """Return how strongly an action is active, from 0 to 1.
+
+        Held buttons and keys count as 1. Axis bindings scale with the stick or trigger
+        position after the deadzone. The strongest binding wins.
+        """
+        strength = 0.0
+        for input_event, actions in self.bindings.items():
+            if action not in actions:
+                continue
+            if input_event.input_type == InputType.CONTROLLER_AXIS:
+                value = self.axis_values.get(input_event.value, 0.0) * input_event.direction
+                if value > self.AXIS_DEADZONE:
+                    strength = max(strength, min((value - self.AXIS_DEADZONE) / (1 - self.AXIS_DEADZONE), 1.0))
+            elif input_event in self.held_inputs:
+                strength = 1.0
+        return strength
+
     def clear_held_controller_inputs(self) -> None:
         """Clear all held controller button and axis inputs."""
+        self.axis_values.clear()
         controller_events = (InputType.CONTROLLER_BUTTON, InputType.CONTROLLER_AXIS)
         self.held_inputs = {
             input_event for input_event in self.held_inputs if input_event.input_type not in controller_events
@@ -184,6 +213,7 @@ class InputManager[Action]:
                 raise ValueError("Quit event should not be passed to InputManager")
             case pg.WINDOWFOCUSLOST:
                 self.held_inputs.clear()
+                self.axis_values.clear()
             case pg.CONTROLLERDEVICEADDED:
                 self.add_controller(event.device_index)
             case pg.CONTROLLERDEVICEREMOVED:
@@ -198,8 +228,7 @@ class InputManager[Action]:
                 input_event = InputEvent.controller_button(event.button, keyup=is_keyup(event))
                 self._update_held_input(input_event)
             case pg.CONTROLLERAXISMOTION:
-                input_event = InputEvent.controller_axis(event.axis)
-                self._update_held_input(input_event)
+                self.axis_values[event.axis] = event.value / AXIS_MAX_VALUE
             # Mouse motion events are not considered "held" inputs, so we don't update held_inputs.
             case pg.MOUSEMOTION:
                 input_event = InputEvent.mouse_motion(event.pos)

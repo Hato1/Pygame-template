@@ -1,8 +1,10 @@
 from enum import Enum, auto
 
 import pygame as pg
+import pytest
 
 from my_game.core.input_manager import (
+    AXIS_MAX_VALUE,
     InputEvent,
     InputManager,
 )
@@ -96,3 +98,40 @@ def test_controller_removal_clears_held_controller_buttons_only() -> None:
     manager.process_pygame_event(pg.event.Event(pg.CONTROLLERDEVICEREMOVED, instance_id=3))
 
     assert manager.get_held_actions() == {Action.SELECT}
+
+
+def test_action_strength_scales_axis_after_deadzone() -> None:
+    # TODO: These tests assume the deadzone defined in InputManager.AXIS_DEADZONE is 0.2.
+    manager = InputManager(Action)
+    manager.bind(Action.SELECT, InputEvent.controller_axis(pg.CONTROLLER_AXIS_LEFTX, direction=1))
+    manager.bind(Action.MOUSE_CLICK, InputEvent.controller_axis(pg.CONTROLLER_AXIS_LEFTX, direction=-1))
+
+    def move_stick(value: float) -> None:
+        value = int(value * AXIS_MAX_VALUE)
+        manager.process_pygame_event(
+            pg.event.Event(pg.CONTROLLERAXISMOTION, axis=pg.CONTROLLER_AXIS_LEFTX, value=value, instance_id=3)
+        )
+
+    move_stick(0.1)
+    assert manager.get_action_strength(Action.SELECT) == 0.0
+
+    move_stick(0.6)
+    assert manager.get_action_strength(Action.SELECT) == pytest.approx(0.5, rel=1e-4)
+    assert manager.get_action_strength(Action.MOUSE_CLICK) == 0.0
+
+    move_stick(-1.0)
+    assert manager.get_action_strength(Action.SELECT) == 0.0
+    assert manager.get_action_strength(Action.MOUSE_CLICK) == 1.0
+    assert manager.get_held_actions() == set()
+
+    manager.process_pygame_event(pg.event.Event(pg.CONTROLLERDEVICEREMOVED, instance_id=3))
+    assert manager.get_action_strength(Action.MOUSE_CLICK) == 0.0
+
+
+def test_action_strength_is_full_for_held_buttons() -> None:
+    manager = InputManager(Action)
+    manager.bind(Action.SELECT, InputEvent.keyboard(pg.K_RETURN))
+
+    assert manager.get_action_strength(Action.SELECT) == 0.0
+    manager.process_pygame_event(pg.event.Event(pg.KEYDOWN, key=pg.K_RETURN))
+    assert manager.get_action_strength(Action.SELECT) == 1.0

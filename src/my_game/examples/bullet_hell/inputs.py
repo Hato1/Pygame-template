@@ -40,3 +40,7 @@ input_manager.bind(Action.UP, InputEvent.controller_button(pg.CONTROLLER_BUTTON_
 input_manager.bind(Action.DOWN, InputEvent.controller_button(pg.CONTROLLER_BUTTON_DPAD_DOWN))
 input_manager.bind(Action.LEFT, InputEvent.controller_button(pg.CONTROLLER_BUTTON_DPAD_LEFT))
 input_manager.bind(Action.RIGHT, InputEvent.controller_button(pg.CONTROLLER_BUTTON_DPAD_RIGHT))
+input_manager.bind(Action.UP, InputEvent.controller_axis(pg.CONTROLLER_AXIS_LEFTY, direction=-1))
+input_manager.bind(Action.DOWN, InputEvent.controller_axis(pg.CONTROLLER_AXIS_LEFTY, direction=1))
+input_manager.bind(Action.LEFT, InputEvent.controller_axis(pg.CONTROLLER_AXIS_LEFTX, direction=-1))
+input_manager.bind(Action.RIGHT, InputEvent.controller_axis(pg.CONTROLLER_AXIS_LEFTX, direction=1))
