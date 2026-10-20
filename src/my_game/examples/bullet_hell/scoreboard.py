@@ -6,9 +6,9 @@ import pygame as pg
 
 from my_game.core.asset_manager import Fonts
 from my_game.core.input_manager import InputState
-from my_game.core.state_manager import State, TransitionData
-from my_game.examples.bullet_hell import main_menu
+from my_game.core.state_manager import State
 from my_game.examples.bullet_hell.inputs import Action
+from my_game.examples.bullet_hell.state_data import BulletHellState, BulletHellTransitionData
 
 
 class SubState(Enum):
@@ -33,7 +33,7 @@ DEFAULT_SCORES: list[ScoreEntry] = [
 ]
 
 
-class Scoreboard(State):
+class Scoreboard(State[BulletHellState, BulletHellTransitionData]):
     BIGFONT = Fonts.PICO8.load(12)
     FONT = Fonts.PICO8.load(6)
     UI_OFFSET = 5  # Pixels from the edge of the screen to draw UI elements.
@@ -49,7 +49,7 @@ class Scoreboard(State):
     def enter(
         self,
         surface_rect: pg.Rect,
-        transition_data: TransitionData,
+        transition_data: BulletHellTransitionData,
     ):
         super().enter(surface_rect, transition_data=transition_data)
         self.current_score = transition_data.score
@@ -96,7 +96,7 @@ class Scoreboard(State):
         if self.sub_state == SubState.VIEWING:
             if Action.UI_SELECT in actions:
                 self.done = True
-                self.next_state = main_menu.MainMenu
+                self.next_state = BulletHellState.MAIN_MENU
 
         elif self.sub_state == SubState.NEW_HIGHSCORE:
             if Action.LEFT in actions:

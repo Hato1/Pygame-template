@@ -6,9 +6,9 @@ import pygame as pg
 
 from my_game.core.asset_manager import Fonts, Images, UIElements
 from my_game.core.input_manager import InputState
-from my_game.core.state_manager import State, TransitionData
-from my_game.examples.bullet_hell import scoreboard
+from my_game.core.state_manager import State
 from my_game.examples.bullet_hell.inputs import Action
+from my_game.examples.bullet_hell.state_data import BulletHellState, BulletHellTransitionData
 
 
 def get_random_position_on_rect_perimeter(rect: pg.Rect) -> pg.Vector2:
@@ -124,7 +124,7 @@ class Player:
         surface.blit(self.SPRITE, self.rect)
 
 
-class Game(State):
+class Game(State[BulletHellState, BulletHellTransitionData]):
     DEFAULT_MONSTER_INTERVAL = 2  # Seconds between monster spawns.
     MONSTER_INTERVAL_DECREASE_RATE = 0.02  # Rate at which monster spawn interval decreases.
     MINIMUM_MONSTER_INTERVAL = 0.1  # Minimum seconds between monster spawns.
@@ -143,7 +143,7 @@ class Game(State):
     def enter(
         self,
         surface_rect: pg.Rect,
-        transition_data: TransitionData,
+        transition_data: BulletHellTransitionData,
     ) -> None:
         super().enter(surface_rect, transition_data=transition_data)
         self.monster_meter = 0
@@ -155,10 +155,7 @@ class Game(State):
     def handle_event(self, actions: set[Enum], event: pg.Event) -> None:
         if Action.UI_SELECT in actions:
             self.done = True
-            # assign the class object from the module alias to avoid
-            # circular-import issues that arise from `from ... import ...`
-            # and to keep the reference short.
-            self.next_state = scoreboard.Scoreboard
+            self.next_state = BulletHellState.SCOREBOARD
 
     def draw_healthbar(self, surface) -> None:
         """Draws the player's health as hearts in the top-left corner."""
@@ -212,7 +209,7 @@ class Game(State):
 
         if self.player.health <= 0:
             self.done = True
-            self.next_state = scoreboard.Scoreboard
+            self.next_state = BulletHellState.SCOREBOARD
 
         self.update_difficulty(dt)
 
@@ -227,7 +224,7 @@ class Game(State):
         self.draw_healthbar(surface)
         self.draw_score(surface)
 
-    def exit(self) -> TransitionData:
+    def exit(self) -> BulletHellTransitionData:
         self.transition_data.score = self.score
         transition_data = super().exit()
         return transition_data

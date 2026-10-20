@@ -5,11 +5,11 @@ import pygame as pg
 from my_game.core.asset_manager import Fonts
 from my_game.core.input_manager import InputState
 from my_game.core.state_manager import State
-from my_game.examples.bullet_hell import game
 from my_game.examples.bullet_hell.inputs import Action
+from my_game.examples.bullet_hell.state_data import BulletHellState, BulletHellTransitionData
 
 
-class MainMenu(State):
+class MainMenu(State[BulletHellState, BulletHellTransitionData]):
     FONT = Fonts.PICO8.load(6)
 
     def __init__(self) -> None:
@@ -18,7 +18,7 @@ class MainMenu(State):
     def handle_event(self, actions: set[Enum], event: pg.Event) -> None:
         if Action.UI_SELECT in actions:
             self.done = True
-            self.next_state = game.Game
+            self.next_state = BulletHellState.GAME
 
     def update(self, surface_rect: pg.Rect, dt: float, input_state: InputState) -> None:
         pass

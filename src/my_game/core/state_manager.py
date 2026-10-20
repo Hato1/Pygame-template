@@ -1,14 +1,7 @@
-"""This module contains the StateManager class and a abstract State class.
-
-TODO: Fix key manager to capture both keypress instances and key holds.
-      Use pygame.key.get_pressed() for key holds and key.get_just_pressed
-      and key.get_just_released alongside event.pump for instantaneous.
-      Actually don't because this will miss non keyboard events.
-      Create a KeyManager class to handle this. Keeps track of each key
-      and press frames.
-"""
+"""This module contains the StateManager class and a abstract State class."""
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Hashable, Mapping
 from dataclasses import dataclass
 from enum import Enum
 
@@ -17,29 +10,24 @@ import pygame as pg
 from my_game.core.input_manager import InputManager, InputState
 
 
-# TODO: End users should be able to define their own TransitionData class
-# and pass it to the StateManager. They shouldn't have to extend the StateManager here.
 @dataclass
 class TransitionData:
     """Data to be passed between states during a transition."""
 
-    previous_state: type[State] | None = None
-
-    # Example of a persistent variable that can be passed between states.
-    score: float = 0.0
+    previous_state: Hashable | None = None
 
 
-class State(ABC):
+class State[StateKey: Hashable, Payload: TransitionData](ABC):
     """Abstract base class for program states.
 
     Attributes:
         done (bool): Leave this state and go to the next one.
         quit (bool): Exit the entire program.
-        next_state (type[State] | None): State to transition to when this one is done.
-        transition_data (TransitionData): Data to be passed to the next state.
+        next_state (StateKey | None): Registered state to transition to when this one is done.
+        transition_data (Payload): Data to be passed to the next state.
         start_time (float): Time in seconds since the State started.
 
-        enter(surface_rect: pg.Rect, transition_data: TransitionData):
+        enter(surface_rect: pg.Rect, transition_data: Payload):
             Called when this state becomes the active state.
 
         exit():
@@ -64,26 +52,26 @@ class State(ABC):
     def __init__(self):
         self.done: bool = False
         self.quit: bool = False
-        self.next_state: type[State] | None = None
-        self.transition_data: TransitionData = TransitionData()
+        self.next_state: StateKey | None = None
+        self.transition_data: Payload
         self.start_time: float = 0.0
 
     def enter(
         self,
         surface_rect: pg.Rect,
-        transition_data: TransitionData,
+        transition_data: Payload,
     ) -> None:
         """Called when this state becomes the active state.
 
         surface_rect: Rect representing the surface dimensions.
         transition_data: Data delivered from the previous state.
         """
+        self.transition_data = transition_data
         self.start_time = pg.time.get_ticks() / 1000.0
 
-    def exit(self) -> TransitionData:
+    def exit(self) -> Payload:
         """Called before leaving this state."""
         self.done = False
-        self.transition_data.previous_state = type(self)
         return self.transition_data
 
     @abstractmethod
@@ -111,11 +99,20 @@ class State(ABC):
         pass
 
 
-class StateManager:
+@dataclass(frozen=True)
+class StateRegistry[StateKey: Hashable, Payload: TransitionData]:
+    """State factories and transition-data construction for one game."""
+
+    factories: Mapping[StateKey, Callable[[], State[StateKey, Payload]]]
+    initial_state: StateKey
+    transition_data_factory: Callable[[], Payload]
+
+
+class StateManager[StateKey: Hashable, Payload: TransitionData]:
     """Responsible for managing the different states/scenes of a Pygame application.
 
     Methods:
-        change_state(new_state: type[State]):
+        change_state(new_state: StateKey):
             Cleans up the current state and transitions to the next state, passing persistent variables.
 
         toggle_show_fps():
@@ -134,33 +131,41 @@ class StateManager:
     def __init__(
         self,
         screen: pg.Surface,
-        states: dict[type[State], State],
-        starting_state: type[State],
+        registry: StateRegistry[StateKey, Payload],
         input_manager: InputManager,
         caption: str,
     ):
-        """Initialize the StateManager with a dictionary of states and the starting state."""
+        """Initialize the manager from a state's registry."""
 
         self.screen: pg.Surface = screen
-        self.states: dict[type[State], State] = states
-        self.current_state: State = self.states[starting_state]
+        self.states = dict(registry.factories)
+        self.current_state_id = registry.initial_state
+        self.current_state = self.states[registry.initial_state]()
         self.input_manager: InputManager = input_manager
         self.caption: str = caption  # Caption for the window.
+        self.transition_data_factory = registry.transition_data_factory
 
         self.quit: bool = False  # Set to True to exit program.
         self.clock: pg.Clock = pg.time.Clock()
         self.fps: float = 60.0  # Used to limit the framerate.
         self.show_fps: bool = True  # Display the framerate in the caption.
 
-        self.current_state.enter(self.screen.get_rect(), TransitionData())
+        self.current_state.enter(self.screen.get_rect(), self.transition_data_factory())
 
-    def change_state(self, next_state: type[State] | None) -> None:
+    def change_state(self, next_state: StateKey | None) -> None:
         """Exit the current state, enter the next one."""
-        transition_data = self.current_state.exit()
-        if not next_state:
+        if next_state is None:
             raise ValueError("Attempted to change state but next_state not set.")
 
-        self.current_state = self.states[next_state]
+        try:
+            state_factory = self.states[next_state]
+        except KeyError as error:
+            raise KeyError(f"State is not registered: {next_state!r}") from error
+
+        transition_data = self.current_state.exit()
+        transition_data.previous_state = self.current_state_id
+        self.current_state_id = next_state
+        self.current_state = state_factory()
         self.current_state.enter(
             self.screen.get_rect(),
             transition_data=transition_data,
