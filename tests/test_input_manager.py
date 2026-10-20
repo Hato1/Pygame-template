@@ -5,7 +5,6 @@ import pygame as pg
 from my_game.core.input_manager import (
     InputEvent,
     InputManager,
-    InputType,
 )
 
 
@@ -49,10 +48,9 @@ def test_get_binding_returns_structured_input_identity() -> None:
         InputEvent.controller_button(pg.CONTROLLER_BUTTON_A),
     )
 
-    keyup = False
     assert manager.get_bound_inputs(Action.SELECT) == {
-        (pg.K_RETURN, InputType.KEYBOARD, keyup),
-        (pg.CONTROLLER_BUTTON_A, InputType.CONTROLLER_BUTTON, keyup),
+        InputEvent.keyboard(pg.K_RETURN),
+        InputEvent.controller_button(pg.CONTROLLER_BUTTON_A),
     }
 
 

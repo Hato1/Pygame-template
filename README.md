@@ -7,7 +7,9 @@ A template for building structured Pygame projects with modern Python tooling.
 * 🎨 Centralised asset loader
   * Works in packaged builds
   * Compatible with Pygbag web builds
-* 🎮 Example playable game
+* 🎮 Controller support
+  * Hotplugging enabled
+* 👾 Example playable game
 * 📦 Dependency management with UV
 * 🧹 Pre-commit hooks configured for:
   * Static type checking with Mypy

@@ -11,6 +11,7 @@ from enum import Enum, StrEnum
 from typing import NamedTuple, TypeVar
 
 import pygame as pg
+from pygame._sdl2.controller import Controller
 
 Action = TypeVar("Action", bound=Enum)
 
@@ -37,9 +38,10 @@ class InputEvent(NamedTuple):
     value: int
     input_type: InputType
     keyup: bool = False
+    direction: int = 0
 
     @classmethod
-    def keyboard(cls, value, *, keyup: bool = False):
+    def keyboard(cls, value: int, *, keyup: bool = False):
         return cls(value, InputType.KEYBOARD, keyup)
 
     @classmethod
@@ -55,8 +57,8 @@ class InputEvent(NamedTuple):
         return cls(value, InputType.CONTROLLER_BUTTON, keyup)
 
     @classmethod
-    def controller_axis(cls, value: int):
-        return cls(value, InputType.CONTROLLER_AXIS, keyup=False)
+    def controller_axis(cls, value: int, *, keyup: bool = False, direction: int = 0):
+        return cls(value, InputType.CONTROLLER_AXIS, keyup=keyup, direction=direction)
 
 
 def is_keyup(event: pg.Event):
@@ -77,11 +79,16 @@ class InputManager[Action]:
     def __init__(self, actions: type[Action]) -> None:
         """Initialize the InputManager with a set of actions.
 
+        The actions arg is not used, but it is included for type checking and documentation purposes.
+
         Args:
             actions (type[Action]): The Enum of possible actions that can be bound to inputs.
         """
         self.bindings: defaultdict[InputEvent, set[Action]] = defaultdict(set)
         self.held_inputs: set[InputEvent] = set()
+        # Can leave this empty for now as pygame sends CONTROLLERDEVICEADDED events
+        # for all connected controllers at start of program.
+        self.controllers: dict[int, Controller] = {}
 
     def bind(
         self,
@@ -153,6 +160,15 @@ class InputManager[Action]:
             input_event for input_event in self.held_inputs if input_event.input_type not in controller_events
         }
 
+    def add_controller(self, device_index: int) -> None:
+        """Open a controller so pygame delivers its CONTROLLER* events."""
+        controller = Controller(device_index)
+        self.controllers[controller.id] = controller
+
+    def remove_controller(self, instance_id: int) -> None:
+        self.controllers.pop(instance_id, None)
+        self.clear_held_controller_inputs()
+
     def _update_held_input(self, input_event: InputEvent) -> None:
         if input_event.keyup:
             self.held_inputs.discard(input_event._replace(keyup=False))
@@ -168,8 +184,10 @@ class InputManager[Action]:
                 raise ValueError("Quit event should not be passed to InputManager")
             case pg.WINDOWFOCUSLOST:
                 self.held_inputs.clear()
+            case pg.CONTROLLERDEVICEADDED:
+                self.add_controller(event.device_index)
             case pg.CONTROLLERDEVICEREMOVED:
-                self.clear_held_controller_inputs()
+                self.remove_controller(event.instance_id)
             case pg.KEYDOWN | pg.KEYUP:
                 input_event = InputEvent.keyboard(event.key, keyup=is_keyup(event))
                 self._update_held_input(input_event)
