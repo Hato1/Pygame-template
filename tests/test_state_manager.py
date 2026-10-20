@@ -99,5 +99,7 @@ def test_state_manager_passes_held_actions_to_update(monkeypatch) -> None:
 
     assert state.input_state is not None
     assert state.input_state.held_actions == {Action.MOVE}
+    assert Action.MOVE in state.input_state
+    assert Action.ANALOG_MOVE not in state.input_state
     assert state.input_state.get_action_strength(Action.MOVE) == 1.0
     assert state.input_state.get_action_strength(Action.ANALOG_MOVE) == pytest.approx(0.5, rel=1e-4)

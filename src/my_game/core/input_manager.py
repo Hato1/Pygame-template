@@ -31,6 +31,9 @@ class InputState[Action: Enum]:
         # A frozen dataclass does not freeze mutable field values.
         object.__setattr__(self, "action_strengths", MappingProxyType(dict(self.action_strengths)))
 
+    def __contains__(self, action: Action) -> bool:
+        return action in self.held_actions
+
     def get_action_strength(self, action: Action) -> float:
         """Return the current strength of an action, or zero when inactive."""
         return self.action_strengths.get(action, 0.0)
