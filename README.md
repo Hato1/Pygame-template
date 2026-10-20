@@ -2,6 +2,11 @@
 
 A template for building structured Pygame projects with modern Python tooling.
 
+## Requirements and Support
+* Python 3.14 or newer
+* [UV](https://docs.astral.sh/uv/getting-started/installation/) for dependency management and project commands
+* Automated release builds for Windows, macOS, and Linux via GitHub Actions
+
 ### ✨ Features:
 * 🧠 State machine architecture (Main Menu, Level1, etc.)
 * 🎨 Centralised asset loader
