@@ -14,7 +14,7 @@ from enum import Enum
 
 import pygame as pg
 
-from my_game.core.input_manager import InputManager
+from my_game.core.input_manager import InputManager, InputState
 
 
 # TODO: End users should be able to define their own TransitionData class
@@ -50,7 +50,7 @@ class State(ABC):
             Abstract method to process a single Pygame event.
             Must be implemented by subclasses.
 
-        update(surface_rect: pg.Rect, dt: float, held_actions: set[Enum]):
+        update(surface_rect: pg.Rect, dt: float, input_state: InputState[Enum]):
             Abstract method to update program logic from one frame to the next.
             Don't draw anything to any surfaces here.
             Must be implemented by subclasses.
@@ -92,12 +92,12 @@ class State(ABC):
         pass
 
     @abstractmethod
-    def update(self, surface_rect: pg.Rect, dt: float, held_actions: set[Enum]) -> None:
+    def update(self, surface_rect: pg.Rect, dt: float, input_state: InputState[Enum]) -> None:
         """Update game logic. Runs every frame.
 
         surface_rect: Rect representing the surface dimensions.
         dt: Time in seconds since last frame.
-        held_actions: Actions whose bound inputs are currently held.
+        input_state: Frame-scoped held actions and action strengths.
         """
         pass
 
@@ -193,8 +193,8 @@ class StateManager:
         if self.current_state.done:
             self.change_state(self.current_state.next_state)
 
-        held_actions = self.input_manager.get_held_actions()
-        self.current_state.update(self.screen.get_rect(), dt, held_actions)
+        input_state = self.input_manager.get_input_state()
+        self.current_state.update(self.screen.get_rect(), dt, input_state)
         self.current_state.draw(self.screen, dt)
 
     def main(self):

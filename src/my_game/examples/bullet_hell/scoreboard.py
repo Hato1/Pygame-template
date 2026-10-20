@@ -5,6 +5,7 @@ from typing import NamedTuple
 import pygame as pg
 
 from my_game.core.asset_manager import Fonts
+from my_game.core.input_manager import InputState
 from my_game.core.state_manager import State, TransitionData
 from my_game.examples.bullet_hell import main_menu
 from my_game.examples.bullet_hell.inputs import Action
@@ -112,7 +113,7 @@ class Scoreboard(State):
         else:
             raise ValueError(f"Unhandled sub-state: {self.sub_state}")
 
-    def update(self, surface_rect, dt, held_actions: set[Enum]):
+    def update(self, surface_rect, dt, input_state: InputState) -> None:
         pass
 
     def draw_title(self, surface: pg.Surface):

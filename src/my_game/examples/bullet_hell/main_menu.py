@@ -3,6 +3,7 @@ from enum import Enum
 import pygame as pg
 
 from my_game.core.asset_manager import Fonts
+from my_game.core.input_manager import InputState
 from my_game.core.state_manager import State
 from my_game.examples.bullet_hell import game
 from my_game.examples.bullet_hell.inputs import Action
@@ -19,7 +20,7 @@ class MainMenu(State):
             self.done = True
             self.next_state = game.Game
 
-    def update(self, surface_rect: pg.Rect, dt: float, held_actions: set[Enum]) -> None:
+    def update(self, surface_rect: pg.Rect, dt: float, input_state: InputState) -> None:
         pass
 
     def draw(self, surface: pg.Surface, dt: float) -> None:

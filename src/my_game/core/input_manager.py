@@ -7,8 +7,11 @@ https://pyga.me/docs/ref/event.html
 """
 
 from collections import defaultdict
+from collections.abc import Mapping
+from dataclasses import dataclass
 from enum import Enum, StrEnum
-from typing import NamedTuple, TypeVar
+from types import MappingProxyType
+from typing import NamedTuple
 
 import pygame as pg
 from pygame._sdl2.controller import Controller
@@ -16,7 +19,21 @@ from pygame._sdl2.controller import Controller
 # Absolute maximum value for a controller axis in Pygame. Joysticks range from -32767 to 32767.
 AXIS_MAX_VALUE = 32767
 
-Action = TypeVar("Action", bound=Enum)
+
+@dataclass(frozen=True)
+class InputState[Action: Enum]:
+    """Frame-scoped input data exposed to game states."""
+
+    held_actions: frozenset[Action]
+    action_strengths: Mapping[Action, float]
+
+    def __post_init__(self) -> None:
+        # A frozen dataclass does not freeze mutable field values.
+        object.__setattr__(self, "action_strengths", MappingProxyType(dict(self.action_strengths)))
+
+    def get_action_strength(self, action: Action) -> float:
+        """Return the current strength of an action, or zero when inactive."""
+        return self.action_strengths.get(action, 0.0)
 
 
 class InputType(StrEnum):
@@ -71,7 +88,7 @@ def is_keyup(event: pg.Event):
     return event.type in [pg.KEYUP, pg.CONTROLLERBUTTONUP, pg.MOUSEBUTTONUP]
 
 
-class InputManager[Action]:
+class InputManager[Action: Enum]:
     """Maps actions to Pygame inputs.
 
     Attributes:
@@ -162,6 +179,12 @@ class InputManager[Action]:
         for input_event in self.held_inputs:
             held_actions.update(self.get_bound_actions(input_event))
         return held_actions
+
+    def get_input_state(self) -> InputState[Action]:
+        """Return a snapshot of held actions and their current strengths."""
+        actions = {action for bound_actions in self.bindings.values() for action in bound_actions}
+        strengths: dict[Action, float] = {action: self.get_action_strength(action) for action in actions}
+        return InputState(frozenset(self.get_held_actions()), strengths)
 
     def get_action_strength(self, action: Action) -> float:
         """Return how strongly an action is active, from 0 to 1.

@@ -5,9 +5,10 @@ from typing import Self
 import pygame as pg
 
 from my_game.core.asset_manager import Fonts, Images, UIElements
+from my_game.core.input_manager import InputState
 from my_game.core.state_manager import State, TransitionData
 from my_game.examples.bullet_hell import scoreboard
-from my_game.examples.bullet_hell.inputs import Action, input_manager
+from my_game.examples.bullet_hell.inputs import Action
 
 
 def get_random_position_on_rect_perimeter(rect: pg.Rect) -> pg.Vector2:
@@ -183,9 +184,9 @@ class Game(State):
             self.monsters.append(new_monster)
             self.monster_meter -= self.monster_interval
 
-    def update_player_movement(self, surface_rect: pg.Rect, dt: float) -> None:
+    def update_player_movement(self, surface_rect: pg.Rect, dt: float, input_state: InputState) -> None:
         """Update player position based on input strength."""
-        strength = input_manager.get_action_strength
+        strength = input_state.get_action_strength
         movement = pg.Vector2(
             strength(Action.RIGHT) - strength(Action.LEFT),
             strength(Action.DOWN) - strength(Action.UP),
@@ -198,9 +199,9 @@ class Game(State):
         self.monster_interval -= self.MONSTER_INTERVAL_DECREASE_RATE * dt
         self.monster_interval = max(self.monster_interval, self.MINIMUM_MONSTER_INTERVAL)
 
-    def update(self, surface_rect: pg.Rect, dt: float, held_actions: set[Enum]) -> None:
+    def update(self, surface_rect: pg.Rect, dt: float, input_state: InputState) -> None:
         self.update_monster_spawner(surface_rect, dt)
-        self.update_player_movement(surface_rect, dt)
+        self.update_player_movement(surface_rect, dt, input_state)
 
         # Iterate in reverse order to safely remove monsters while iterating
         for monster in self.monsters[::-1]:
