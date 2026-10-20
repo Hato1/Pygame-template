@@ -7,6 +7,7 @@ import pygame as pg
 from my_game.core.asset_manager import Fonts
 from my_game.core.state_manager import State, TransitionData
 from my_game.examples.bullet_hell import main_menu
+from my_game.examples.bullet_hell.inputs import Action
 
 
 class SubState(Enum):
@@ -39,7 +40,7 @@ class Scoreboard(State):
     def __init__(self):
         super().__init__()
         self.scores: list[ScoreEntry] = DEFAULT_SCORES.copy()
-        self.player_name: list[str] = [" ", " ", " "]
+        self.player_name: list[str] = ["a", "a", "a"]
         self.current_score: float
         self.cursor_position: int
         self.sub_state: SubState
@@ -78,28 +79,40 @@ class Scoreboard(State):
         self.scores.pop()  # Keep only top scores.
         self.sub_state = SubState.VIEWING
 
-    def handle_event(self, event: pg.Event):
+    def change_character(self, delta: int):
+        """Change the character at the cursor position by delta in the alphabet."""
+        current_char = self.player_name[self.cursor_position]
+        if current_char == " ":
+            current_index = -1  # Treat space as before 'a'.
+        else:
+            current_index = ord(current_char) - ord("a")
+
+        new_index = (current_index + delta) % 26  # Wrap around alphabet.
+        new_char = chr(ord("a") + new_index)
+        self.set_char_at_cursor(new_char)
+
+    def handle_event(self, actions: set[Enum], event: pg.Event) -> None:
         if self.sub_state == SubState.VIEWING:
-            if event.type == pg.KEYDOWN:
-                if event.key == pg.K_RETURN:
-                    self.done = True
-                    self.next_state = main_menu.MainMenu
+            if Action.UI_SELECT in actions:
+                self.done = True
+                self.next_state = main_menu.MainMenu
 
         elif self.sub_state == SubState.NEW_HIGHSCORE:
-            if event.type == pg.KEYDOWN:
-                if event.key in [pg.K_LEFT, pg.K_BACKSPACE]:
-                    self.set_char_at_cursor(" ")
-                    self.advance_cursor(-1)
-                elif pg.K_a <= event.key <= pg.K_z:
-                    self.set_char_at_cursor(chr(event.key))
-                    self.advance_cursor()
-                elif event.key == pg.K_RETURN:
-                    self.enter_score()
+            if Action.LEFT in actions:
+                self.advance_cursor(-1)
+            if Action.RIGHT in actions:
+                self.advance_cursor(1)
+            if Action.DOWN in actions:
+                self.change_character(1)
+            if Action.UP in actions:
+                self.change_character(-1)
+            if Action.UI_SELECT in actions:
+                self.enter_score()
 
         else:
             raise ValueError(f"Unhandled sub-state: {self.sub_state}")
 
-    def update(self, surface_rect, keys, dt):
+    def update(self, surface_rect, dt, held_actions: set[Enum]):
         pass
 
     def draw_title(self, surface: pg.Surface):
@@ -124,6 +137,7 @@ class Scoreboard(State):
         surface.blit(entry_surf, entry_rect)
 
     def draw_scores(self, surface: pg.Surface, top_y: int):
+        # TODO: Draw arrows above/below the current character in the name entry when in NEW_HIGHSCORE sub-state.
         user_score_drawn = False
         for i, entry in enumerate(self.scores):
             if self.sub_state == SubState.NEW_HIGHSCORE:

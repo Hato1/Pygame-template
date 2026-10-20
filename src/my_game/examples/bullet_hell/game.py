@@ -1,4 +1,5 @@
 import random
+from enum import Enum
 from typing import Self
 
 import pygame as pg
@@ -6,6 +7,7 @@ import pygame as pg
 from my_game.core.asset_manager import Fonts, Images, UIElements
 from my_game.core.state_manager import State, TransitionData
 from my_game.examples.bullet_hell import scoreboard
+from my_game.examples.bullet_hell.inputs import Action, input_manager
 
 
 def get_random_position_on_rect_perimeter(rect: pg.Rect) -> pg.Vector2:
@@ -90,7 +92,7 @@ class Player:
     def increase_velocity(self, delta: pg.Vector2):
         if not delta:
             return
-        delta = pg.Vector2.normalize(delta) * self.THRUST_SCALAR
+        delta = delta.clamp_magnitude(1) * self.THRUST_SCALAR
         self.velocity += delta
 
     def clamp_position(self, surface_rect: pg.Rect):
@@ -149,14 +151,13 @@ class Game(State):
         self.player = Player(pg.Vector2(surface_rect.center))
         self.score = 0.0
 
-    def handle_event(self, event: pg.Event) -> None:
-        if event.type == pg.KEYDOWN:
-            if event.key == pg.K_RETURN:
-                self.done = True
-                # assign the class object from the module alias to avoid
-                # circular-import issues that arise from `from ... import ...`
-                # and to keep the reference short.
-                self.next_state = scoreboard.Scoreboard
+    def handle_event(self, actions: set[Enum], event: pg.Event) -> None:
+        if Action.UI_SELECT in actions:
+            self.done = True
+            # assign the class object from the module alias to avoid
+            # circular-import issues that arise from `from ... import ...`
+            # and to keep the reference short.
+            self.next_state = scoreboard.Scoreboard
 
     def draw_healthbar(self, surface) -> None:
         """Draws the player's health as hearts in the top-left corner."""
@@ -182,18 +183,13 @@ class Game(State):
             self.monsters.append(new_monster)
             self.monster_meter -= self.monster_interval
 
-    def update_player_movement(self, surface_rect: pg.Rect, keys, dt: float) -> None:
-        """Update player position based on input keys."""
-        movement = pg.Vector2(0, 0)
-        if keys[pg.K_w] or keys[pg.K_UP]:
-            movement.y -= 1
-        if keys[pg.K_s] or keys[pg.K_DOWN]:
-            movement.y += 1
-        if keys[pg.K_a] or keys[pg.K_LEFT]:
-            movement.x -= 1
-        if keys[pg.K_d] or keys[pg.K_RIGHT]:
-            movement.x += 1
-        # TODO: Controller support?
+    def update_player_movement(self, surface_rect: pg.Rect, dt: float) -> None:
+        """Update player position based on input strength."""
+        strength = input_manager.get_action_strength
+        movement = pg.Vector2(
+            strength(Action.RIGHT) - strength(Action.LEFT),
+            strength(Action.DOWN) - strength(Action.UP),
+        )
         self.player.increase_velocity(movement)
         self.player.update(surface_rect, dt)
 
@@ -202,11 +198,12 @@ class Game(State):
         self.monster_interval -= self.MONSTER_INTERVAL_DECREASE_RATE * dt
         self.monster_interval = max(self.monster_interval, self.MINIMUM_MONSTER_INTERVAL)
 
-    def update(self, surface_rect: pg.Rect, keys, dt: float) -> None:
+    def update(self, surface_rect: pg.Rect, dt: float, held_actions: set[Enum]) -> None:
         self.update_monster_spawner(surface_rect, dt)
-        self.update_player_movement(surface_rect, keys, dt)
+        self.update_player_movement(surface_rect, dt)
 
-        for monster in self.monsters:
+        # Iterate in reverse order to safely remove monsters while iterating
+        for monster in self.monsters[::-1]:
             monster.update(dt)
             if monster.rect.colliderect(self.player.rect):
                 self.player.health -= 1

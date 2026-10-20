@@ -7,7 +7,9 @@ A template for building structured Pygame projects with modern Python tooling.
 * 🎨 Centralised asset loader
   * Works in packaged builds
   * Compatible with Pygbag web builds
-* 🎮 Example playable game
+* 🎮 Controller support
+  * Hotplugging enabled
+* 👾 Example playable game
 * 📦 Dependency management with UV
 * 🧹 Pre-commit hooks configured for:
   * Static type checking with Mypy
@@ -19,6 +21,8 @@ A template for building structured Pygame projects with modern Python tooling.
   * Linux binary
 * 🚀 Automatic cross-platform builds via GitHub Actions
   * Build for Windows, Mac, and Linux - even if you don't own those systems
+
+Note: Multiple controllers are not currently supported. Inputs from connected controllers are conflated.
 
 ## Getting Started
 1. [Install UV](https://docs.astral.sh/uv/getting-started/installation/)
@@ -91,11 +95,11 @@ Applications are usually forward-compatible, not backward-compatible.
 
 Run:
 ```bash
-uv run tools/create_exe.py
+uv run tools/build_app.py
 ```
 This will:
 1. Populate a `build` directory
-2. Output the final executable in `dist` in both "one file" and "many file" formats.
+2. Output the final executable in `dist`.
 
 
 ## ❓ FAQ

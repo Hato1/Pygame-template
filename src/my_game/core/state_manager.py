@@ -10,8 +10,11 @@ TODO: Fix key manager to capture both keypress instances and key holds.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from enum import Enum
 
 import pygame as pg
+
+from my_game.core.input_manager import InputManager
 
 
 # TODO: End users should be able to define their own TransitionData class
@@ -47,7 +50,7 @@ class State(ABC):
             Abstract method to process a single Pygame event.
             Must be implemented by subclasses.
 
-        update(surface_rect: pg.Rect, keys: tuple, dt: float):
+        update(surface_rect: pg.Rect, dt: float, held_actions: set[Enum]):
             Abstract method to update program logic from one frame to the next.
             Don't draw anything to any surfaces here.
             Must be implemented by subclasses.
@@ -84,17 +87,17 @@ class State(ABC):
         return self.transition_data
 
     @abstractmethod
-    def handle_event(self, event: pg.Event) -> None:
+    def handle_event(self, actions: set[Enum], event: pg.Event) -> None:
         """Handle one pygame event."""
         pass
 
     @abstractmethod
-    def update(self, surface_rect: pg.Rect, keys: tuple, dt: float) -> None:
+    def update(self, surface_rect: pg.Rect, dt: float, held_actions: set[Enum]) -> None:
         """Update game logic. Runs every frame.
 
         surface_rect: Rect representing the surface dimensions.
-        keys: The current state of all keyboard buttons.
         dt: Time in seconds since last frame.
+        held_actions: Actions whose bound inputs are currently held.
         """
         pass
 
@@ -128,19 +131,26 @@ class StateManager:
             Runs the main loop, handling events, updating states, rendering, and updating the window caption.
     """
 
-    def __init__(self, screen: pg.Surface, states: dict[type[State], State], starting_state: type[State], caption: str):
+    def __init__(
+        self,
+        screen: pg.Surface,
+        states: dict[type[State], State],
+        starting_state: type[State],
+        input_manager: InputManager,
+        caption: str,
+    ):
         """Initialize the StateManager with a dictionary of states and the starting state."""
 
         self.screen: pg.Surface = screen
         self.states: dict[type[State], State] = states
         self.current_state: State = self.states[starting_state]
+        self.input_manager: InputManager = input_manager
         self.caption: str = caption  # Caption for the window.
 
         self.quit: bool = False  # Set to True to exit program.
         self.clock: pg.Clock = pg.time.Clock()
         self.fps: float = 60.0  # Used to limit the framerate.
         self.show_fps: bool = True  # Display the framerate in the caption.
-        self.keys = pg.key.get_pressed()  # Current state of all keyboard buttons.
 
         self.current_state.enter(self.screen.get_rect(), TransitionData())
 
@@ -163,22 +173,13 @@ class StateManager:
             pg.display.set_caption(self.caption)
 
     def handle_events(self) -> None:
-        """Process all events and pass them down to current State.
-
-        The f5 key globally turns on/off the display of FPS in the caption
-        """
+        """Process all events and pass them down to current State."""
         for event in pg.event.get():
-            match event.type:
-                case pg.QUIT:
-                    self.quit = True
-                case pg.KEYDOWN:
-                    self.keys = pg.key.get_pressed()
-                    if event.key == pg.K_F5:
-                        self.toggle_show_fps()
-                case pg.KEYUP:
-                    self.keys = pg.key.get_pressed()
-
-            self.current_state.handle_event(event)
+            if event.type == pg.QUIT:
+                self.quit = True
+            else:
+                actions = self.input_manager.process_pygame_event(event)
+                self.current_state.handle_event(actions, event)
 
     def update(self, dt: float):
         """Checks for state change and updates the current state.
@@ -192,7 +193,8 @@ class StateManager:
         if self.current_state.done:
             self.change_state(self.current_state.next_state)
 
-        self.current_state.update(self.screen.get_rect(), self.keys, dt)
+        held_actions = self.input_manager.get_held_actions()
+        self.current_state.update(self.screen.get_rect(), dt, held_actions)
         self.current_state.draw(self.screen, dt)
 
     def main(self):
