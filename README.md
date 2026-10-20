@@ -22,6 +22,8 @@ A template for building structured Pygame projects with modern Python tooling.
 * 🚀 Automatic cross-platform builds via GitHub Actions
   * Build for Windows, Mac, and Linux - even if you don't own those systems
 
+Note: Multiple controllers are not currently supported. Inputs from connected controllers are conflated.
+
 ## Getting Started
 1. [Install UV](https://docs.astral.sh/uv/getting-started/installation/)
 2. Navigate to your project
@@ -93,11 +95,11 @@ Applications are usually forward-compatible, not backward-compatible.
 
 Run:
 ```bash
-uv run tools/create_exe.py
+uv run tools/build_app.py
 ```
 This will:
 1. Populate a `build` directory
-2. Output the final executable in `dist` in both "one file" and "many file" formats.
+2. Output the final executable in `dist`.
 
 
 ## ❓ FAQ

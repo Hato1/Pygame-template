@@ -202,7 +202,8 @@ class Game(State):
         self.update_monster_spawner(surface_rect, dt)
         self.update_player_movement(surface_rect, dt)
 
-        for monster in self.monsters:
+        # Iterate in reverse order to safely remove monsters while iterating
+        for monster in self.monsters[::-1]:
             monster.update(dt)
             if monster.rect.colliderect(self.player.rect):
                 self.player.health -= 1

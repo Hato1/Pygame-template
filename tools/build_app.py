@@ -50,7 +50,8 @@ HIDDEN_IMPORTS: list[str] = [
 def build() -> None:
     """Build the executable"""
 
-    add_data = [arg for src, dst in DATAFILES for arg in ("--add-data", f"{src}:{dst}")]
+    separator = ";" if PLATFORM == "win" else ":"
+    add_data = [arg for src, dst in DATAFILES for arg in ("--add-data", f"{src}{separator}{dst}")]
     hidden_imports = [arg for item in HIDDEN_IMPORTS for arg in ("--hidden-import", item)]
 
     pyinstaller.run(
