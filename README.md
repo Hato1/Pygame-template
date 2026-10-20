@@ -60,6 +60,109 @@ uv run run-game
 > * VSCode should detect it automatically.
 > * If not, manually select .venv.
 
+## State Architecture
+
+The state system lets you split a game into screens, such as a menu, a level, and a results screen. `StateManager` runs the game loop and keeps track of which screen is active.
+
+### 1. Name Your Screens
+
+A state ID is a name the manager uses to find a screen. Put the IDs and data shared between screens in a small module, such as `state_data.py`:
+
+```python
+from dataclasses import dataclass
+from enum import StrEnum, auto
+
+from my_game.core.state_manager import TransitionData
+
+
+class GameState(StrEnum):
+    MENU = auto()
+    PLAYING = auto()
+    RESULTS = auto()
+
+
+@dataclass
+class GameTransitionData(TransitionData):
+    score: float = 0.0
+```
+
+`GameTransitionData` carries information from one screen to another. Add fields for anything your next screen needs. The manager fills in `previous_state` automatically.
+
+### 2. Create a Screen
+
+Each screen is a class that inherits from `State`. It handles events, updates the game, and draws the screen. Here is a small menu example:
+
+```python
+from enum import Enum, auto
+
+import pygame as pg
+
+from my_game.core.input_manager import InputState
+from my_game.core.state_manager import State
+from .state_data import GameState, GameTransitionData
+
+
+class Action(Enum):
+    START = auto()
+    MOVE_LEFT = auto()
+
+
+class Menu(State[GameState, GameTransitionData]):
+    def handle_event(self, actions: set[Enum], event: pg.Event) -> None:
+        if Action.START in actions:
+            self.done = True
+            self.next_state = GameState.PLAYING
+
+    def update(self, surface_rect: pg.Rect, dt: float, input_state: InputState) -> None:
+        if Action.MOVE_LEFT in input_state:
+            print("Move left")
+
+    def draw(self, surface: pg.Surface, dt: float) -> None:
+        surface.fill("black")
+```
+
+When a player chooses to continue, set `done` to `True` and choose the next screen with `next_state`. In `update()`, `dt` is the time since the previous frame. Check held buttons with `action in input_state`; use `input_state.get_action_strength(action)` when analog strength matters.
+
+The manager creates a new instance each time a screen is entered. Put setup that should happen on every visit in `enter()`. Override `exit()` if the screen needs to add data to `transition_data` before leaving.
+
+### 3. Connect the Screens
+
+Register each ID with its screen class. The class acts as a factory: the manager calls it to create a fresh screen. Set which screen opens first and which transition-data class to create:
+
+```python
+from my_game.core.state_manager import StateRegistry
+
+from .game import Game
+from .menu import Menu
+from .results import Results
+from .state_data import GameState, GameTransitionData
+
+
+state_registry = StateRegistry(
+    factories={
+        GameState.MENU: Menu,
+        GameState.PLAYING: Game,
+        GameState.RESULTS: Results,
+    },
+    initial_state=GameState.MENU,
+    transition_data_factory=GameTransitionData,
+)
+```
+
+Keep this registry in one module that imports your screens. Screens can refer to the IDs in `state_data.py` without importing one another.
+
+### 4. Start the Game Loop
+
+After creating the Pygame window and input manager, pass them and the registry to `StateManager`:
+
+```python
+from my_game.core.state_manager import StateManager
+
+manager = StateManager(screen, state_registry, input_manager, "My Game")
+manager.main()
+```
+
+When a screen requests a change, the manager calls its `exit()`, records its ID in `previous_state`, creates the next screen, and passes it the transition data through `enter()`. The [bullet-hell example](src/my_game/examples/bullet_hell) shows the complete setup used by this project.
 
 
 ## 🏗️ Automatic Builds (Recommended)
