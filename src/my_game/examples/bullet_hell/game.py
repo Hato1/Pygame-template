@@ -4,9 +4,9 @@ from typing import Self
 
 import pygame as pg
 
-from my_game.core.asset_manager import Fonts, Images, UIElements
 from my_game.core.input_manager import InputState
 from my_game.core.state_manager import State
+from my_game.examples.bullet_hell.assets import Fonts, Images, UIElements
 from my_game.examples.bullet_hell.inputs import Action
 from my_game.examples.bullet_hell.state_data import BulletHellState, BulletHellTransitionData
 

@@ -5,7 +5,7 @@ import pygame as pg
 import my_game.initialise_pygame  # noqa: F401
 from my_game.constants import DEFAULT_CAPTION, SCREEN_SIZE
 from my_game.core.state_manager import StateManager
-from my_game.examples import bullet_hell
+from my_game.examples.bullet_hell import registry as bullet_hell
 
 
 def main():

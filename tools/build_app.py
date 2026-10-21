@@ -41,6 +41,10 @@ VERSION = pyproject["project"]["version"]
 ICON = f"{files(NAME) / 'assets' / 'icon.png'}"
 DATAFILES: list[tuple[str, str]] = [
     (f"{files(NAME)}/assets", f"{NAME}/assets"),
+    (
+        f"{files(NAME)}/examples/bullet_hell/assets",
+        f"{NAME}/examples/bullet_hell/assets",
+    ),
 ]
 HIDDEN_IMPORTS: list[str] = [
     # Add any hidden imports here.
