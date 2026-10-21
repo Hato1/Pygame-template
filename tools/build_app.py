@@ -39,6 +39,8 @@ with Path("pyproject.toml").open("rb") as f:
 NAME = pyproject["project"]["name"]
 VERSION = pyproject["project"]["version"]
 ICON = f"{files(NAME) / 'assets' / 'icon.png'}"
+if not Path(ICON).is_file():
+    raise FileNotFoundError(f"Icon file not found: {ICON}")
 HIDDEN_IMPORTS: list[str] = [
     # Add any hidden imports here.
 ]
