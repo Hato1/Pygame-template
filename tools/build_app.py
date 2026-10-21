@@ -39,13 +39,6 @@ with Path("pyproject.toml").open("rb") as f:
 NAME = pyproject["project"]["name"]
 VERSION = pyproject["project"]["version"]
 ICON = f"{files(NAME) / 'assets' / 'icon.png'}"
-DATAFILES: list[tuple[str, str]] = [
-    (f"{files(NAME)}/assets", f"{NAME}/assets"),
-    (
-        f"{files(NAME)}/examples/bullet_hell/assets",
-        f"{NAME}/examples/bullet_hell/assets",
-    ),
-]
 HIDDEN_IMPORTS: list[str] = [
     # Add any hidden imports here.
 ]
@@ -54,8 +47,6 @@ HIDDEN_IMPORTS: list[str] = [
 def build() -> None:
     """Build the executable"""
 
-    separator = ";" if PLATFORM == "win" else ":"
-    add_data = [arg for src, dst in DATAFILES for arg in ("--add-data", f"{src}{separator}{dst}")]
     hidden_imports = [arg for item in HIDDEN_IMPORTS for arg in ("--hidden-import", item)]
 
     pyinstaller.run(
@@ -70,7 +61,8 @@ def build() -> None:
             "--noconfirm",
             *("--log-level", "WARN"),
             *hidden_imports,
-            *add_data,
+            "--collect-data",
+            NAME,
             "-i",
             ICON,
         ]
