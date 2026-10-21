@@ -3,11 +3,11 @@
 from collections.abc import Callable
 
 from my_game.core.state_manager import State, StateRegistry
-from my_game.examples.bullet_hell.game import Game
 from my_game.examples.bullet_hell.inputs import input_manager
-from my_game.examples.bullet_hell.main_menu import MainMenu
-from my_game.examples.bullet_hell.scoreboard import Scoreboard
 from my_game.examples.bullet_hell.state_data import BulletHellState, BulletHellTransitionData
+from my_game.examples.bullet_hell.states.game import Game
+from my_game.examples.bullet_hell.states.main_menu import MainMenu
+from my_game.examples.bullet_hell.states.scoreboard import Scoreboard
 
 STATE_FACTORIES: dict[
     BulletHellState,
