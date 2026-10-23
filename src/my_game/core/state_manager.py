@@ -1,5 +1,6 @@
 """This module contains the StateManager class and a abstract State class."""
 
+import asyncio
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Hashable, Mapping
 from dataclasses import dataclass
@@ -202,14 +203,17 @@ class StateManager[StateKey: Hashable, Payload: TransitionData]:
         self.current_state.update(self.screen.get_rect(), dt, input_state)
         self.current_state.draw(self.screen, dt)
 
-    def main(self):
-        """Main loop for entire program."""
+    async def main(self):
+        """Main loop for entire program.
+
+        async is used for pygbag (web) compatibility."""
 
         while not self.quit:
             dt = self.clock.tick(self.fps) / 1000.0
             self.handle_events()
             self.update(dt)
             pg.display.update()
+            await asyncio.sleep(0)
 
             if self.show_fps:
                 fps = self.clock.get_fps()
