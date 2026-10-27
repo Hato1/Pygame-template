@@ -18,10 +18,11 @@ dev = [
     "pyinstaller>=6.22.3", # For building executables on Windows, Mac and Linux.
     "pillow>=12.3.0", # Required for Pyinstaller PNG icon conversion.
     "pylint>=4.0.9",  # Linter.
+    "pygbag>=0.9.3",  # For building web versions of the game. 0.9.3 doesn't support python3.15
 ]
 
 [project.scripts]
-run-game = "my_game.main:main"
+run-game = "my_game.main:run"
 
 # Including this to install project files into venv.
 [build-system]

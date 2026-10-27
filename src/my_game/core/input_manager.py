@@ -6,15 +6,32 @@ Pygame event types can be found here:
 https://pyga.me/docs/ref/event.html
 """
 
+import sys
 from collections import defaultdict
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 from types import MappingProxyType
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 import pygame as pg
-from pygame._sdl2.controller import Controller
+
+# Pygbag (web) does not include the pygame._sdl2.controller module, but tries to import it anyway.
+# https://pygame-web.github.io/wiki/pygbag/#adding-modules
+if TYPE_CHECKING:
+    from pygame._sdl2.controller import Controller
+elif sys.platform != "emscripten":
+    import importlib
+
+    Controller = importlib.import_module("pygame._sdl2.controller").Controller
+else:
+
+    class Controller:
+        """Stand-in for the controller class missing from the pygbag (web) build."""
+
+        def __init__(self, device_index: int) -> None:
+            self.id = device_index
+
 
 # Absolute maximum value for a controller axis in Pygame. Joysticks range from -32767 to 32767.
 AXIS_MAX_VALUE = 32767
