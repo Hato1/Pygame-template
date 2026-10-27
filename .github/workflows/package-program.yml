@@ -39,19 +39,15 @@ jobs:
         run: uv sync --locked --all-extras --dev
 
       - name: Build executable with PyInstaller
-        run: |
-          uv run python tools/build_web.py
-          tar -czvf linux_release.tar.gz dist/*
-
-        run: |  # Use ini.
+        run: |  # TODO: Use ini and/or load config from pyproject.toml.
               python -m pygbag \
+                --PYBUILD=3.14 \
+                --app_name="my_game" \
+                --title="my_game" \
                 --build \
-                --PYBUILD=3.12 \
-                --app_name="Tiny Space" \
-                --ume_block=0 \
-                --title="Tiny Space" \
-                --icon=$GITHUB_WORKSPACE/tiny_space/assets/favicon.png \
-                $GITHUB_WORKSPACE/main.py
+                --icon=$GITHUB_WORKSPACE/src/my_game/assets/icon.png \
+                $GITHUB_WORKSPACE/src/my_game
+      # TODO: Upload to GitHub release as well (with --archive for itch.io support)
       - name : "Upload to GitHub pages branch gh-pages"
         uses: JamesIves/github-pages-deploy-action@v4
         with:
