@@ -3,7 +3,8 @@ name = "my_game"
 version = "0.1.0"
 description = "A Pygame CE template with state management, asset loading, controller input, and cross-platform packaging."
 readme = "README.md"
-requires-python = ">=3.14"
+# Use Python 3.14 as it's the latest pygbag supports at the time of writing.
+requires-python = "==3.14.*"
 dependencies = [
     "pygame-ce>=2.5.8",
 ]
