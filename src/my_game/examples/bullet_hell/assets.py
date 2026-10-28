@@ -66,16 +66,6 @@ class Levels(Enum):
 class UIElements(Enum):
     HEART_FULL = "healthbar/heart_full.png"
     HEART_EMPTY = "healthbar/heart_empty.png"
-    NUMBER_0 = "numbers/0.png"
-    NUMBER_1 = "numbers/1.png"
-    NUMBER_2 = "numbers/2.png"
-    NUMBER_3 = "numbers/3.png"
-    NUMBER_4 = "numbers/4.png"
-    NUMBER_5 = "numbers/5.png"
-    NUMBER_6 = "numbers/6.png"
-    NUMBER_7 = "numbers/7.png"
-    NUMBER_8 = "numbers/8.png"
-    NUMBER_9 = "numbers/9.png"
 
     @cache
     def load(self) -> pg.Surface:
