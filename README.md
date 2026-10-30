@@ -174,7 +174,9 @@ After pushing changes to GitHub:
     * Build Windows .exe
     * Build macOS .app
     * Build Linux binary
+    * Build for web
     * Attach them all to the release
+    * Deploy for web via Github Pages
 
 
 ## 🔧 Manual Builds
@@ -211,24 +213,8 @@ This will:
 
 
 ## ❓ FAQ
->### What is UV and why should I use it?
->
->TODO
-
 >### What is Pre-commit?
 >A tool that runs checks (linting, formatting, typing) before each commit. After checking out the project it must be installed to run. This project is configured to run Mypy and Ruff checks by default.
-
->### What is Mypy and why should I use it?
->
->TODO
-
->###  What is Ruff and why should I use it?
->
->TODO
-
->### What is Pytest and why should I use it?
->
->TODO
 
 >### What is a state system and why should I use it?
 >A state system is a clean way to manage game screens like:
@@ -237,7 +223,3 @@ This will:
 >* Level 1
 >* Game Over  
 >Without it, things can get confusing and it's easy not to properly set up, pack up and reset differents parts of a project. This can lead to bugs and difficult to maintain code.
-
->### How do GitHub Actions builds work?
->
->TODO
